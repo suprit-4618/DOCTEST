@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ====================================================================
+     COZY DESIGN SYSTEM - ROOT TOKENS
+     Theme 1 (Default): Warm Milk Tea & Cream Pastel (Light & Cozy)
+     Theme 2: Cozy Cocoa & Lofi Night (Dark & Warm)
+     ==================================================================== */
+
+  :root,
+  [data-theme="cream"] {
+    /* Base Canvas & Surfaces */
+    --color-slate-950: #FAF7F2; /* Warm Creamy Oat Milk Background */
+    --color-slate-900: #FFFFFF; /* Crisp Marshmallow Card */
+    --color-slate-850: #F5EFEB; /* Inner elevated surfaces */
+    --color-slate-800: #EADBCE; /* Soft warm borders */
+    --color-slate-750: #DFD1C4; /* Hover borders */
+    --color-slate-700: #CBB9AA; /* Active borders */
+
+    /* Typography (Warm Espresso / Mocha Palette) */
+    --color-slate-600: #8C7B72; /* Muted hints */
+    --color-slate-500: #78675E; /* Secondary text */
+    --color-slate-400: #5C4D44; /* Body secondary */
+    --color-slate-300: #42352D; /* Body text */
+    --color-slate-200: #2E231D; /* Strong text */
+    --color-slate-100: #231914; /* Headings (Deep Chocolate Espresso) */
+    --color-slate-50:  #140E0A;
+
+    /* Sweet Strawberry Coral & Warm Rose Accents */
+    --color-indigo-950: #FFF1F2;
+    --color-indigo-900: #FFE4E6;
+    --color-indigo-800: #FECDD3;
+    --color-indigo-700: #FDA4AF;
+    --color-indigo-600: #F43F5E; /* Bouncy Rose Button */
+    --color-indigo-500: #FB7185; /* Warm Strawberry Accent */
+    --color-indigo-400: #E11D48; /* Accent badge text */
+    --color-indigo-300: #BE123C;
+    --color-indigo-200: #9F1239;
+    --color-indigo-100: #881337;
+    --color-indigo-50:  #4C0519;
+
+    /* Subtle Warm Accent */
+    --color-violet-400: #9061F9;
+    --color-violet-500: #7E3AF2;
+    --color-violet-600: #6C2BD9;
+
+    --card-shadow: 0 4px 16px -2px rgba(60, 40, 30, 0.06), 0 1px 3px rgba(60, 40, 30, 0.04);
+    --pill-shadow: 0 2px 8px 0 rgba(225, 91, 67, 0.15);
+  }
+
+  /* Cozy Cocoa Cafe (Warm Dark / Lofi Night Mode) */
+  [data-theme="cocoa"] {
+    --color-slate-950: #1C1719; /* Deep Warm Cocoa Canvas */
+    --color-slate-900: #262023; /* Warm Cocoa Solid Card */
+    --color-slate-850: #30292D; /* Inset sub-card */
+    --color-slate-800: #443B40; /* Soft Cocoa Border */
+    --color-slate-750: #574B52; /* Hover border */
+    --color-slate-700: #6D5F66;
+
+    --color-slate-600: #8D7D85;
+    --color-slate-500: #A999A1;
+    --color-slate-400: #C5B6BE; /* Soft readable secondary */
+    --color-slate-300: #E2D6DC;
+    --color-slate-200: #F3EAEF;
+    --color-slate-100: #FAF4F7; /* Warm Marshmallow Headings */
+    --color-slate-50:  #FFFFFF;
+
+    /* Warm Terracotta & Peach Accents */
+    --color-indigo-950: #3B120F;
+    --color-indigo-900: #5E1F1A;
+    --color-indigo-800: #862F27;
+    --color-indigo-700: #B24236;
+    --color-indigo-600: #DC5846;
+    --color-indigo-500: #EA6C55;
+    --color-indigo-400: #F59B8B;
+    --color-indigo-300: #FAC6BC;
+    --color-indigo-200: #FDE4DF;
+    --color-indigo-100: #FFF3EE;
+    --color-indigo-50:  #FFFFFF;
+
+    /* Lavender / Amethyst Night */
+    --color-violet-400: #C4B5FD;
+    --color-violet-500: #A78BFA;
+    --color-violet-600: #8B5CF6;
+
+    --card-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.4);
+    --pill-shadow: 0 3px 12px 0 rgba(220, 88, 70, 0.25);
+  }
+
+  html, body {
+    background-color: var(--color-slate-950);
+    color: var(--color-slate-300);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background-image: radial-gradient(var(--color-slate-800) 1px, transparent 1px);
+    background-size: 24px 24px;
+    transition: background-color 0.25s ease, color 0.25s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.015em;
+  }
+
+  /* Custom Cute Pill Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-slate-750);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-indigo-500);
+  }
+}
+
+/* Light Theme Heading Text Alignment */
+:root:not([data-theme="cocoa"]) h1.text-white,
+:root:not([data-theme="cocoa"]) h2.text-white,
+:root:not([data-theme="cocoa"]) h3.text-white,
+:root:not([data-theme="cocoa"]) h4.text-white,
+:root:not([data-theme="cocoa"]) p.text-white,
+:root:not([data-theme="cocoa"]) span.text-white:not(button *):not(a[class*="bg-"] *):not([class*="bg-rose"] *):not([class*="bg-indigo"] *):not([class*="bg-emerald"] *):not([class*="bg-violet"] *) {
+  color: var(--color-slate-100) !important;
+}
+
+[data-theme="cream"] h1.text-white,
+[data-theme="cream"] h2.text-white,
+[data-theme="cream"] h3.text-white,
+[data-theme="cream"] h4.text-white,
+[data-theme="cream"] p.text-white,
+[data-theme="cream"] span.text-white:not(button *):not(a[class*="bg-"] *):not([class*="bg-rose"] *):not([class*="bg-indigo"] *):not([class*="bg-emerald"] *):not([class*="bg-violet"] *) {
+  color: var(--color-slate-100) !important;
+}
+
+/* Bouncy Cozy Button Micro-interactions */
+button:not(:disabled),
+a[role="button"] {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease, background-color 0.15s ease;
+}
+button:not(:disabled):active,
+a[role="button"]:active {
+  transform: scale(0.97);
+}
+
+/* Accessible focus outlines with soft warm glow */
+*:focus-visible {
+  @apply outline-none ring-2 ring-rose-400 ring-offset-2 ring-offset-transparent transition-shadow;
+}
+
+/* Rich Formatted Content & KaTeX styling */
+.formatted-content-root {
+  @apply leading-relaxed;
+}
+
+.formatted-code-block {
+  @apply relative my-3 rounded-2xl bg-slate-900 border border-slate-800 p-4 font-mono text-xs md:text-sm text-indigo-400 overflow-x-auto shadow-sm;
+}
+
+.code-lang-tag {
+  @apply absolute top-2 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-slate-800 text-slate-400 border border-slate-700;
+  opacity: 0.85;
+}
+
+.formatted-inline-code {
+  @apply font-mono text-[0.9em] px-2 py-0.5 rounded-lg bg-slate-800 text-rose-400 border border-slate-700 mx-0.5;
+}
+
+.katex-display-wrapper {
+  @apply my-3 overflow-x-auto py-2 text-center text-indigo-400;
+}
+
+.katex-error {
+  @apply text-rose-400 font-mono text-xs my-1;
+}
+
+/* RTL directional text alignment */
+[dir="auto"] {
+  unicode-bidi: plaintext;
+}

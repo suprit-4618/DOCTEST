@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mcq-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DEFAULT_LLM_PROVIDER=${DEFAULT_LLM_PROVIDER:-gemini}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - APP_PASSWORD=${APP_PASSWORD:-}
+      - DATABASE_URL=sqlite:///./data/mcq_selftest.db
+      - STORAGE_DIR=/app/storage
+      - MAX_FILE_SIZE_BYTES=26214400
+      - MAX_PAGE_COUNT=150
+    volumes:
+      - mcq_backend_storage:/app/storage
+      - mcq_backend_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mcq-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mcq_backend_storage:
+  mcq_backend_data:

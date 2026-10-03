@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Document Storage & Uploaded Files (Zero Leakage)
+storage/
+**/storage/*
+!**/storage/.gitkeep
+
+# Node / Frontend
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+dist-ssr/
+*.local
+
+# Environment variables & API Keys (DO NOT COMMIT)
+.env
+*.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Scratch, agent artifacts & temp storage
+.tempmediaStorage/
+.system_generated/
+.gemini/
+scratch/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
