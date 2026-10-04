@@ -47,9 +47,9 @@ class GroqProvider(BaseLLMProvider):
         self,
         messages: List[Dict[str, str]],
         json_mode: bool = True,
-        max_retries: int = 4,
+        max_retries: int = 8,
     ) -> Dict[str, Any]:
-        """Calls Groq chat completion API with retry on rate limit."""
+        """Calls Groq chat completion API with smart retry and rate-limit backoff."""
         if not self.api_key:
             raise ValueError("GROQ_API_KEY is not configured.")
 
@@ -67,18 +67,33 @@ class GroqProvider(BaseLLMProvider):
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
 
-        delay = 1.0
+        delay = 2.0
         async with httpx.AsyncClient(timeout=90.0) as client:
             for attempt in range(max_retries):
                 try:
                     response = await client.post(self.endpoint, headers=headers, json=payload)
 
                     if response.status_code in [429, 500, 502, 503, 504]:
+                        wait_seconds = delay
+                        retry_after = response.headers.get("retry-after")
+                        reset_tokens = response.headers.get("x-ratelimit-reset-tokens")
+                        if retry_after:
+                            try:
+                                wait_seconds = max(wait_seconds, float(retry_after) + 0.5)
+                            except Exception:
+                                pass
+                        elif reset_tokens:
+                            try:
+                                clean_reset = reset_tokens.strip().rstrip("s")
+                                wait_seconds = max(wait_seconds, float(clean_reset) + 0.5)
+                            except Exception:
+                                pass
+
                         logger.warning(
-                            f"Groq API returned {response.status_code}, attempt {attempt + 1}/{max_retries}. Retrying in {delay}s..."
+                            f"Groq API returned {response.status_code}, attempt {attempt + 1}/{max_retries}. Waiting {wait_seconds:.2f}s..."
                         )
-                        await asyncio.sleep(delay)
-                        delay *= 2
+                        await asyncio.sleep(wait_seconds)
+                        delay = max(delay * 1.5, 4.0)
                         continue
 
                     if not response.is_success:
@@ -212,15 +227,29 @@ EXAM TEXT TO PARSE:
         context: Optional[Dict[str, Any]] = None,
     ) -> ExtractionBatchResult:
         """
-        Runs local RapidOCR on the page images in memory, then parses via Groq.
+        Extracts page text (using native digital PDF text when available, falling back to RapidOCR for scans),
+        then parses via Groq.
         """
         from services.ocr_service import ocr_image
+        from services.ingestion import get_document_storage_dir, get_or_extract_page_text
 
         page_numbers = (context or {}).get("page_numbers", [])
+        doc_id = (context or {}).get("document_id")
+        doc_dir = get_document_storage_dir(doc_id) if doc_id else None
+
         combined_text_lines = []
         for idx, img_bytes in enumerate(page_images):
             p_num = page_numbers[idx] if idx < len(page_numbers) else (idx + 1)
-            page_text = ocr_image(img_bytes)
+            
+            page_text = ""
+            # 1. Use native digital text if available (or extract from original.pdf on the fly)
+            if doc_dir:
+                page_text = get_or_extract_page_text(doc_dir, p_num)
+
+            # 2. Fall back to RapidOCR for scanned images or photos
+            if not page_text or len(page_text) < 30:
+                page_text = ocr_image(img_bytes)
+
             combined_text_lines.append(f"--- PAGE {p_num} ---\n{page_text}")
 
         return await self.extract_questions_from_text("\n\n".join(combined_text_lines), context=context)

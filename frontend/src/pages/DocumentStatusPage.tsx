@@ -7,9 +7,10 @@ import {
   RotateCcw, 
   Sparkles,
   Eye,
-  BookOpenCheck
+  BookOpenCheck,
+  AlertTriangle
 } from 'lucide-react';
-import { getDocument, getPageImageUrl } from '../api/documents';
+import { getDocument, getPageImageUrl, triggerAiExtraction } from '../api/documents';
 import type { DocumentResponse } from '../types';
 
 export const DocumentStatusPage: React.FC = () => {
@@ -18,6 +19,7 @@ export const DocumentStatusPage: React.FC = () => {
 
   const [doc, setDoc] = useState<DocumentResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [extracting, setExtracting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPreviewPage, setSelectedPreviewPage] = useState<number>(1);
 
@@ -33,6 +35,20 @@ export const DocumentStatusPage: React.FC = () => {
       setLoading(false);
     }
   }, [id]);
+
+  const handleTriggerExtraction = async () => {
+    if (!id) return;
+    try {
+      setExtracting(true);
+      setError(null);
+      await triggerAiExtraction(id);
+      await fetchStatus();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to trigger extraction');
+    } finally {
+      setExtracting(false);
+    }
+  };
 
   useEffect(() => {
     fetchStatus();
@@ -175,26 +191,51 @@ export const DocumentStatusPage: React.FC = () => {
         {/* Success / Extracted State */}
         {isExtracted && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-emerald-500/10 border-2 border-emerald-400/30 shadow-sm">
-              <div className="flex items-center gap-3.5">
-                <CheckCircle2 className="w-6 h-6 text-emerald-400 flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-white font-heading">Document Ready for Practice! 🌟</h3>
-                  <p className="text-xs text-emerald-300/90">
-                    Successfully extracted questions from {doc?.page_count} page{doc && doc.page_count > 1 ? 's' : ''}.
-                  </p>
+            {doc?.question_count === 0 ? (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-400/30 shadow-sm">
+                <div className="flex items-center gap-3.5">
+                  <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-white font-heading">No Questions Extracted Yet</h3>
+                    <p className="text-xs text-amber-300/90">
+                      Pages were rendered ({doc?.page_count} pages), but 0 MCQs have been detected so far.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleTriggerExtraction}
+                    disabled={extracting}
+                    className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-white text-xs font-black shadow-cozy transition cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95 disabled:opacity-50"
+                  >
+                    {extracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    {extracting ? 'Extracting Questions...' : 'Run AI Extraction ✨'}
+                  </button>
                 </div>
               </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-emerald-500/10 border-2 border-emerald-400/30 shadow-sm">
+                <div className="flex items-center gap-3.5">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-white font-heading">Document Ready for Practice! 🌟</h3>
+                    <p className="text-xs text-emerald-300/90">
+                      Successfully extracted {doc?.question_count} questions from {doc?.page_count} page{doc && doc.page_count > 1 ? 's' : ''}.
+                    </p>
+                  </div>
+                </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => navigate(`/documents/${doc?.id}/review`)}
-                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-95 text-white text-xs font-black shadow-cozy transition cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95"
-                >
-                  <BookOpenCheck className="w-4 h-4" /> Review Questions ✨
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigate(`/documents/${doc?.id}/review`)}
+                    className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-95 text-white text-xs font-black shadow-cozy transition cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95"
+                  >
+                    <BookOpenCheck className="w-4 h-4" /> Review Questions ✨
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Quick Metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

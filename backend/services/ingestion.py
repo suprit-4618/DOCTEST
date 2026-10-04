@@ -26,6 +26,18 @@ class IngestionError(Exception):
     pass
 
 
+def is_llm_configured() -> bool:
+    """Checks if the configured LLM provider has an API key available."""
+    provider = (settings.DEFAULT_LLM_PROVIDER or "").lower()
+    if provider == "groq":
+        return bool(settings.GROQ_API_KEY)
+    elif provider == "gemini":
+        return bool(settings.GEMINI_API_KEY)
+    elif provider == "openai":
+        return bool(settings.OPENAI_API_KEY)
+    return bool(settings.GROQ_API_KEY or settings.GEMINI_API_KEY or settings.OPENAI_API_KEY)
+
+
 def sanitize_filename(filename: str) -> str:
     """
     Sanitizes user-provided filenames to prevent path traversal,
@@ -49,6 +61,46 @@ def get_document_storage_dir(document_id: str) -> Path:
     doc_dir = Path(settings.STORAGE_DIR) / safe_id
     doc_dir.mkdir(parents=True, exist_ok=True)
     return doc_dir
+
+
+def get_or_extract_page_text(doc_dir: Path, page_number: int) -> str:
+    """
+    Retrieves extracted text for a page. If page_{n}.txt does not exist,
+    extracts native text directly from original.pdf if present, or runs OCR and caches it.
+    """
+    txt_path = doc_dir / f"page_{page_number}.txt"
+    if txt_path.exists():
+        try:
+            return txt_path.read_text(encoding="utf-8").strip()
+        except Exception:
+            pass
+
+    orig_pdf = doc_dir / "original.pdf"
+    if orig_pdf.exists():
+        try:
+            import fitz
+            with fitz.open(orig_pdf) as pdf_doc:
+                if 0 <= page_number - 1 < len(pdf_doc):
+                    text = pdf_doc[page_number - 1].get_text("text").strip()
+                    if text:
+                        txt_path.write_text(text, encoding="utf-8")
+                        return text
+        except Exception as e:
+            logger.warning(f"Failed extracting text from original.pdf for page {page_number}: {e}")
+
+    # Fall back to local OCR on rendered page image and cache result to avoid redundant work
+    p_img = doc_dir / f"page_{page_number}.png"
+    if p_img.exists():
+        try:
+            from services.ocr_service import ocr_image
+            ocr_text = ocr_image(p_img).strip()
+            if ocr_text:
+                txt_path.write_text(ocr_text, encoding="utf-8")
+                return ocr_text
+        except Exception as e:
+            logger.warning(f"Failed running OCR for page {page_number}: {e}")
+
+    return ""
 
 
 def validate_file_content_and_type(file_bytes: bytes, filename: str) -> Tuple[FileType, str]:
@@ -341,10 +393,11 @@ def process_document_sync(
             doc.page_count = total_pages
             db.commit()
 
-            # Render each page to PNG at ~150 DPI (zoom 150/72)
+            # Render each page to PNG at ~150 DPI (zoom 150/72) and extract digital text if present
             zoom = settings.PDF_RENDER_DPI / 72.0
             matrix = fitz.Matrix(zoom, zoom)
 
+            all_page_texts = []
             for i in range(total_pages):
                 page = fitz_doc.load_page(i)
                 pix = page.get_pixmap(matrix=matrix, alpha=False)
@@ -352,7 +405,18 @@ def process_document_sync(
                 pix.save(str(doc_dir / page_filename))
                 rendered_pages.append(page_filename)
 
+                # Extract native digital text directly (100% precision for non-scanned PDFs)
+                native_text = page.get_text().strip()
+                if native_text:
+                    (doc_dir / f"page_{i + 1}.txt").write_text(native_text, encoding="utf-8")
+                    all_page_texts.append(f"--- PAGE {i + 1} ---\n{native_text}")
+
                 doc.pages_processed = i + 1
+                db.commit()
+
+            if all_page_texts:
+                doc.extracted_text = "\n\n".join(all_page_texts)
+                (doc_dir / "extracted_text.txt").write_text(doc.extracted_text, encoding="utf-8")
                 db.commit()
 
             fitz_doc.close()
@@ -466,7 +530,7 @@ def process_document_sync(
 
         # Update processing progress
         doc.pages_processed = doc.page_count
-        has_api_key = bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY)
+        has_api_key = is_llm_configured()
         q_count = db.query(QuestionDB).filter(QuestionDB.document_id == document_id).count()
         if q_count > 0 or not has_api_key:
             doc.status = DocumentStatus.EXTRACTED.value
@@ -517,8 +581,8 @@ async def process_document_background(
         if not doc:
             return
 
-        # Check if AI Vision extraction is available
-        has_api_key = bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY)
+        # Check if AI Vision / LLM extraction is available
+        has_api_key = is_llm_configured()
         
         # If questions were already parsed from pasted text or DOCX, mark EXTRACTED
         existing_q_count = db.query(QuestionDB).filter(QuestionDB.document_id == document_id).count()
@@ -533,13 +597,13 @@ async def process_document_background(
             pipeline = ExtractionPipeline()
             await pipeline.run_extraction(document_id)
         else:
-            # Complete ingestion gracefully without fake dummy questions
+            # Complete ingestion gracefully with clear notice that an LLM API key is required
             doc.status = DocumentStatus.EXTRACTED.value
-            doc.error_message = None
+            doc.error_message = "No AI API key configured. Set GROQ_API_KEY, GEMINI_API_KEY, or OPENAI_API_KEY in .env to enable automated question extraction."
             db.commit()
             logger.info(
                 f"Document {document_id} rendered {doc.page_count} pages. "
-                "Set GEMINI_API_KEY or OPENAI_API_KEY in .env to enable automated AI Vision parsing."
+                "Set GROQ_API_KEY, GEMINI_API_KEY, or OPENAI_API_KEY in .env to enable automated AI extraction."
             )
 
     except Exception as e:

@@ -68,18 +68,24 @@ def text_similarity(a: str, b: str) -> float:
 
 def parse_inline_answer_key(text: str) -> Dict[int, List[str]]:
     """
-    Regex fallback parser to extract question-number to answer mappings from key text.
-    Matches formats like:
-    - 1-B, 2-D, 3-A
-    - 1. B 2. C 3. A
-    - Q1: (C), Q2: (D)
-    - 1: B, 2: A
+    Regex parser to extract question-number to answer mappings from key text.
+    Handles standard formats (1. B, 1-B, 1: B) and OCR noise (e.g. 1.8 -> 1.B, Z.A -> 7.A).
     """
     mappings: Dict[int, List[str]] = {}
-    pattern = re.compile(r"(?:Q|Question\s*)?(\d{1,3})\s*[:\.\-\)]\s*\(?([A-Fa-f1-6])\)?")
-    for match in pattern.finditer(text):
+    if not text:
+        return mappings
+
+    # Normalize known OCR misrecognitions on question numbers
+    clean_text = re.sub(r"(?m)^\s*[Zz]\s*[\.:\-]", "7.", text)
+    clean_text = re.sub(r"\b[Zz]\s*[\.:\-]\s*([A-Za-z])", r"7.\1", clean_text)
+
+    # Pattern matches 1. B, 1-B, 1.B, 1: B, 1.8 (OCR for B)
+    pattern = re.compile(r"(?:Q|Question\s*)?(\b\d{1,3}\b)\s*[:\.\-\)]\s*\(?([A-Fa-f1-68])\)?(?!\w)")
+    for match in pattern.finditer(clean_text):
         q_num = int(match.group(1))
-        ans_raw = match.group(2)
+        ans_raw = match.group(2).upper()
+        if ans_raw == "8":
+            ans_raw = "B"
         ans_opt = normalize_option_label(ans_raw)
         if q_num not in mappings:
             mappings[q_num] = [ans_opt]
@@ -319,9 +325,9 @@ class ExtractionPipeline:
     def __init__(
         self,
         provider: Optional[BaseLLMProvider] = None,
-        batch_size: int = 4,
+        batch_size: int = 2,
         overlap: int = 0,
-        max_concurrency: int = 2,
+        max_concurrency: int = 1,
     ):
         self.provider = provider or get_llm_provider()
         self.batch_size = batch_size
@@ -478,19 +484,28 @@ class ExtractionPipeline:
             # Also scan candidate answer-key pages (first 2 and last 2 pages) directly
             try:
                 from services.ocr_service import ocr_image
+                from services.ingestion import get_or_extract_page_text
                 doc_dir = get_document_storage_dir(document_id)
                 candidate_pages = set()
                 if total_pages >= 1:
                     candidate_pages.update([1, 2, max(1, total_pages - 1), total_pages])
                 for p_num in sorted(candidate_pages):
-                    p_img = doc_dir / f"page_{p_num}.png"
-                    if p_img.exists():
-                        page_ocr = ocr_image(p_img)
-                        if "answer" in page_ocr.lower():
-                            page_mappings = parse_inline_answer_key(page_ocr)
-                            if len(page_mappings) >= 5:
-                                logger.info(f"Detected {len(page_mappings)} answer key entries on page {p_num}")
-                                answer_key_mappings.update(page_mappings)
+                    page_text = ""
+                    # 1. Native digital text first (from PDF stream or on-demand cache)
+                    if doc_dir:
+                        page_text = get_or_extract_page_text(doc_dir, p_num)
+
+                    # 2. OCR fallback for scans
+                    if not page_text:
+                        p_img = doc_dir / f"page_{p_num}.png"
+                        if p_img.exists():
+                            page_text = ocr_image(p_img)
+
+                    if page_text and "answer" in page_text.lower():
+                        page_mappings = parse_inline_answer_key(page_text)
+                        if len(page_mappings) >= 3:
+                            logger.info(f"Detected {len(page_mappings)} answer key entries on page {p_num}")
+                            answer_key_mappings.update(page_mappings)
             except Exception as e:
                 logger.warning(f"Error scanning candidate pages for answer key: {e}")
 

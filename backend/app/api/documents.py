@@ -801,10 +801,26 @@ async def cancel_document_processing(document_id: str, db: Session = Depends(get
     )
 
 
-@router.post("/{document_id}/extract", response_model=List[QuestionDetail])
-async def trigger_ai_extraction(document_id: str, db: Session = Depends(get_db)):
-    """Trigger the AI Vision extraction pipeline on the ingested document page images."""
-    return await retry_failed_extraction(document_id=document_id, target_pages=None, db=db)
+@router.post("/{document_id}/extract")
+async def trigger_ai_extraction(
+    document_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """Trigger the AI Vision extraction pipeline in background on the ingested document."""
+    doc = db.query(DocumentDB).filter(DocumentDB.id == document_id).first()
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    doc.is_cancelled = False
+    doc.status = DocumentStatus.PROCESSING.value
+    doc.error_message = None
+    db.commit()
+
+    pipeline = ExtractionPipeline()
+    background_tasks.add_task(pipeline.run_extraction, document_id)
+
+    return {"status": "processing", "message": "Extraction started in background"}
 
 
 @router.post("/{document_id}/retry-failed", response_model=List[QuestionDetail])

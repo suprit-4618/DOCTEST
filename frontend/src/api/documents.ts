@@ -129,3 +129,9 @@ export async function importDocumentJson(payload: DocumentImportRequest): Promis
     body: JSON.stringify(payload),
   });
 }
+
+export async function triggerAiExtraction(id: string): Promise<{ status: string; message: string }> {
+  return apiClient<{ status: string; message: string }>(`/api/documents/${id}/extract`, {
+    method: 'POST',
+  });
+}
