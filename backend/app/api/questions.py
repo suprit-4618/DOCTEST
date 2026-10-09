@@ -69,3 +69,53 @@ async def delete_question(question_id: str, db: Session = Depends(get_db)):
     db.delete(question)
     db.commit()
     return None
+
+
+@router.post("/{question_id}/ai-verify")
+async def ai_verify_question(
+    question_id: str,
+    apply: bool = False,
+    db: Session = Depends(get_db)
+):
+    """Ask AI to analyze the question, determine the true correct answer, and explain why."""
+    question = db.query(QuestionDB).filter(QuestionDB.id == question_id).first()
+    if not question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Question {question_id} not found.")
+
+    from providers.factory import get_llm_provider
+    llm = get_llm_provider()
+    payload = [{
+        "question_id": question.id,
+        "question_number": question.number,
+        "question_text": question.text,
+        "options": question.options
+    }]
+
+    try:
+        res = await llm.suggest_answers(payload)
+        if not res.suggestions:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="AI could not solve this question.")
+
+        suggestion = res.suggestions[0]
+        valid_labels = {opt["label"].upper() for opt in question.options}
+        filtered_opts = [o for o in suggestion.correct_options if o.upper() in valid_labels]
+
+        if apply and filtered_opts:
+            question.correct_options = filtered_opts
+            question.answer_source = AnswerSource.AI_SUGGESTED.value
+            question.explanation = suggestion.explanation
+            question.needs_review = False
+            db.commit()
+            db.refresh(question)
+
+        return {
+            "question_id": question.id,
+            "suggested_options": filtered_opts or suggestion.correct_options,
+            "explanation": suggestion.explanation,
+            "applied": apply
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"AI verification failed: {str(e)}"
+        )

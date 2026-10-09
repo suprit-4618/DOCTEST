@@ -29,7 +29,7 @@ import {
   suggestAnswers,
   getPageImageUrl
 } from '../api/documents';
-import { updateQuestion, deleteQuestion } from '../api/questions';
+import { updateQuestion, deleteQuestion, aiVerifyQuestion } from '../api/questions';
 import type {
   DocumentResponse,
   QuestionDetail,
@@ -226,6 +226,34 @@ export const ReviewPage: React.FC = () => {
       setActionLoading(false);
     }
   };
+
+  const [aiVerifyingId, setAiVerifyingId] = useState<string | null>(null);
+
+  const handleAiVerifySingle = async (qId: string) => {
+    try {
+      setAiVerifyingId(qId);
+      const res = await aiVerifyQuestion(qId, true);
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q.id === qId
+            ? {
+                ...q,
+                correct_options: res.suggested_options,
+                answer_source: 'ai_suggested',
+                explanation: res.explanation,
+                needs_review: false,
+              }
+            : q
+        )
+      );
+      showNotification(`AI verified Question! Correct option: [${res.suggested_options.join(', ')}]`);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'AI verification failed');
+    } finally {
+      setAiVerifyingId(null);
+    }
+  };
+
 
   const getSourceBadge = (source: AnswerSource) => {
     switch (source) {
@@ -460,6 +488,16 @@ export const ReviewPage: React.FC = () => {
           </button>
 
           <button
+            onClick={handleSuggestAnswers}
+            disabled={actionLoading}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-300 border border-violet-400/30 text-xs font-bold transition cursor-pointer shadow-cozy-pill disabled:opacity-50"
+            title="Ask AI to solve and verify answers across all questions in the document"
+          >
+            {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" /> : <Sparkles className="w-3.5 h-3.5 text-violet-400" />}
+            <span>AI Solve All</span>
+          </button>
+
+          <button
             onClick={() => setIsAddingQuestion(true)}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-95 text-white text-xs font-black shadow-cozy transition cursor-pointer hover:scale-105 active:scale-95"
           >
@@ -536,6 +574,20 @@ export const ReviewPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleAiVerifySingle(q.id)}
+                      disabled={aiVerifyingId === q.id}
+                      className="p-2 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 border border-violet-400/30 text-violet-300 transition cursor-pointer text-xs font-bold flex items-center gap-1.5 px-3 shadow-cozy-pill disabled:opacity-50"
+                      title="Run AI Solver on this specific question to verify correct answer & generate explanation"
+                    >
+                      {aiVerifyingId === q.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                      )}
+                      <span>AI Verify</span>
+                    </button>
+
                     <button
                       onClick={() => setEditingQuestion(q)}
                       className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-750 text-slate-300 hover:text-white transition cursor-pointer text-xs font-bold flex items-center gap-1.5 px-3 shadow-cozy-pill"

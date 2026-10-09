@@ -27,6 +27,15 @@ import type {
   PracticeFeedbackResponse
 } from '../types';
 
+const parseUtcDate = (dateStr: string | null | undefined): number => {
+  if (!dateStr) return Date.now();
+  const trimmed = dateStr.trim();
+  const hasTz = trimmed.endsWith('Z') || /[+-]\d{2}(?::?\d{2})?$/.test(trimmed);
+  const normalizedStr = hasTz ? trimmed : `${trimmed}Z`;
+  const time = new Date(normalizedStr).getTime();
+  return isNaN(time) ? Date.now() : time;
+};
+
 export const TestTakingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -65,14 +74,6 @@ export const TestTakingPage: React.FC = () => {
           });
         }
         setAnswersMap(initialAnswers);
-
-        // Calculate timer remaining
-        if (data.time_limit_seconds) {
-          const startedAt = new Date(data.started_at).getTime();
-          const elapsedSecs = Math.floor((Date.now() - startedAt) / 1000);
-          const remaining = Math.max(0, data.time_limit_seconds - elapsedSecs);
-          setSecondsRemaining(remaining);
-        }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : 'Failed to load test session');
       } finally {
@@ -82,25 +83,35 @@ export const TestTakingPage: React.FC = () => {
     initSession();
   }, [id]);
 
-  // 2. Timer Loop & Auto Submit on Zero
+  // 2. Continuous Countdown Timer Loop (Immune to drift and timezone offsets)
   useEffect(() => {
-    if (secondsRemaining === null || secondsRemaining <= 0) return;
+    if (!session || !session.time_limit_seconds || session.submitted_at) {
+      setSecondsRemaining(null);
+      return;
+    }
 
-    timerRef.current = setInterval(() => {
-      setSecondsRemaining((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(timerRef.current!);
-          handleAutoSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    const startedAtMs = parseUtcDate(session.started_at);
+    const timeLimitSecs = session.time_limit_seconds;
+
+    const tick = () => {
+      const now = Date.now();
+      const elapsedSecs = Math.max(0, Math.floor((now - startedAtMs) / 1000));
+      const remaining = Math.max(0, timeLimitSecs - elapsedSecs);
+      setSecondsRemaining(remaining);
+
+      if (remaining <= 0) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        handleAutoSubmit();
+      }
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [secondsRemaining]);
+  }, [session?.id, session?.started_at, session?.time_limit_seconds, session?.submitted_at]);
 
   // Question Time Tracking
   useEffect(() => {
@@ -317,8 +328,13 @@ export const TestTakingPage: React.FC = () => {
 
   // Format Timer
   const formatTimer = (totalSecs: number) => {
-    const mins = Math.floor(totalSecs / 60);
+    if (totalSecs < 0) totalSecs = 0;
+    const hrs = Math.floor(totalSecs / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
     const secs = totalSecs % 60;
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 

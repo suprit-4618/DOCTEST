@@ -157,6 +157,7 @@ export interface TestSessionResponse {
   target_score_percentage?: number | null;
   partial_credit?: boolean;
   started_at: string;
+  submitted_at?: string | null;
   question_order: string[];
   questions: TestQuestion[];
   answers?: AnswerSaveItem[];

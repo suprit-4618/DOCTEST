@@ -56,3 +56,13 @@ export async function retakeSession(
     body: JSON.stringify({ mode }),
   });
 }
+
+export async function overrideSessionAnswer(
+  sessionId: string,
+  payload: { question_id: string; correct_options: string[]; explanation?: string }
+): Promise<SubmissionResponse> {
+  return apiClient<SubmissionResponse>(`/api/sessions/${sessionId}/override-answer`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}

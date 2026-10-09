@@ -21,3 +21,20 @@ export async function deleteQuestion(id: string): Promise<void> {
     throw new Error(`Failed to delete question (${response.status})`);
   }
 }
+
+export interface AiVerifyResponse {
+  question_id: string;
+  suggested_options: string[];
+  explanation: string;
+  applied: boolean;
+}
+
+export async function aiVerifyQuestion(
+  questionId: string,
+  apply: boolean = false
+): Promise<AiVerifyResponse> {
+  return apiClient<AiVerifyResponse>(`/api/questions/${questionId}/ai-verify?apply=${apply}`, {
+    method: 'POST',
+  });
+}
+

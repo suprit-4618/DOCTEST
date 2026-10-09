@@ -1,6 +1,7 @@
 import random
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -458,4 +459,48 @@ async def retake_test_session(
         questions=test_questions,
         answers=[]
     )
+
+
+class OverrideAnswerRequest(BaseModel):
+    question_id: str
+    correct_options: List[str]
+    explanation: Optional[str] = None
+
+
+@router.post("/{session_id}/override-answer", response_model=SubmissionResponse)
+async def override_session_answer(
+    session_id: str,
+    payload: OverrideAnswerRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Overrides the correct answer for a question in both the master document and the session,
+    and returns the instantly re-graded session results.
+    """
+    session = db.query(TestSessionDB).filter(TestSessionDB.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Session {session_id} not found.")
+
+    question = db.query(QuestionDB).filter(QuestionDB.id == payload.question_id).first()
+    if not question:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Question {payload.question_id} not found.")
+
+    # Validate that option labels exist
+    valid_labels = {opt["label"].upper() for opt in question.options}
+    filtered_opts = [o.upper() for o in payload.correct_options if o.upper() in valid_labels]
+    if not filtered_opts:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Options {payload.correct_options} do not exist in question options {list(valid_labels)}."
+        )
+
+    question.correct_options = filtered_opts
+    question.answer_source = AnswerSource.MANUAL.value
+    if payload.explanation:
+        question.explanation = payload.explanation
+    question.needs_review = False
+    db.commit()
+
+    # Re-grade and return updated scorecard
+    return await submit_test_session(session_id=session_id, db=db)
 

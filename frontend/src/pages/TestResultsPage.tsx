@@ -21,11 +21,14 @@ import {
   Award,
   AlertCircle,
   BookOpen,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ThumbsUp
 } from 'lucide-react';
 import { FormattedContent } from '../components/FormattedContent';
-import { submitSession, retakeSession } from '../api/sessions';
+import { submitSession, retakeSession, overrideSessionAnswer } from '../api/sessions';
+import { aiVerifyQuestion, type AiVerifyResponse } from '../api/questions';
 import type { SubmissionResponse, AnswerSource } from '../types';
+
 
 export const TestResultsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +41,70 @@ export const TestResultsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(!results);
   const [retaking, setRetaking] = useState<boolean>(false);
   const [filterType, setFilterType] = useState<'all' | 'wrong' | 'unanswered' | 'flagged' | 'correct'>('all');
+
+  // Quick Override & AI Verification state
+  const [overridingQuestionId, setOverridingQuestionId] = useState<string | null>(null);
+  const [verifyingQuestionId, setVerifyingQuestionId] = useState<string | null>(null);
+  const [aiResults, setAiResults] = useState<Record<string, AiVerifyResponse>>({});
+  const [actionToast, setActionToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    setActionToast({ message, type });
+    setTimeout(() => setActionToast(null), 4500);
+  };
+
+  const handleMarkPickAsCorrect = async (q: SubmissionResponse['results'][0]) => {
+    if (!id || q.selected_options.length === 0) return;
+    try {
+      setOverridingQuestionId(q.question_id);
+      const updated = await overrideSessionAnswer(id, {
+        question_id: q.question_id,
+        correct_options: q.selected_options,
+      });
+      setResults(updated);
+      showToast(`Q${q.number || ''}: Pick [${q.selected_options.join(', ')}] marked as correct & scorecard updated!`, 'success');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to update answer key', 'error');
+    } finally {
+      setOverridingQuestionId(null);
+    }
+  };
+
+  const handleVerifyWithAi = async (q: SubmissionResponse['results'][0]) => {
+    try {
+      setVerifyingQuestionId(q.question_id);
+      const res = await aiVerifyQuestion(q.question_id, false);
+      setAiResults((prev) => ({ ...prev, [q.question_id]: res }));
+      showToast(`AI verification complete for Q${q.number || ''}`, 'info');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'AI verification failed', 'error');
+    } finally {
+      setVerifyingQuestionId(null);
+    }
+  };
+
+  const handleApplyAiAnswer = async (q: SubmissionResponse['results'][0], aiRes: AiVerifyResponse) => {
+    if (!id || !aiRes.suggested_options.length) return;
+    try {
+      setOverridingQuestionId(q.question_id);
+      const updated = await overrideSessionAnswer(id, {
+        question_id: q.question_id,
+        correct_options: aiRes.suggested_options,
+        explanation: aiRes.explanation,
+      });
+      setResults(updated);
+      setAiResults((prev) => {
+        const copy = { ...prev };
+        delete copy[q.question_id];
+        return copy;
+      });
+      showToast(`Q${q.number || ''}: AI answer [${aiRes.suggested_options.join(', ')}] applied & scorecard updated!`, 'success');
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to apply AI answer', 'error');
+    } finally {
+      setOverridingQuestionId(null);
+    }
+  };
 
   useEffect(() => {
     async function fetchGradedResults() {
@@ -66,6 +133,7 @@ export const TestResultsPage: React.FC = () => {
       setRetaking(false);
     }
   };
+
 
   if (loading || !results) {
     return (
@@ -156,7 +224,29 @@ export const TestResultsPage: React.FC = () => {
   const canRetakeMistakes = (wrong_count + unanswered_count) > 0;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10 relative">
+      {/* Toast Notification */}
+      {actionToast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 p-4 rounded-2xl border text-white shadow-2xl flex items-center gap-3 animate-fade-in ${
+            actionToast.type === 'error'
+              ? 'bg-rose-950/95 border-rose-500/50 text-rose-200'
+              : actionToast.type === 'info'
+              ? 'bg-violet-950/95 border-violet-500/50 text-violet-200'
+              : 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200'
+          }`}
+        >
+          {actionToast.type === 'error' ? (
+            <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
+          ) : actionToast.type === 'info' ? (
+            <Sparkles className="w-5 h-5 text-violet-400 flex-shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+          )}
+          <span className="text-xs font-bold">{actionToast.message}</span>
+        </div>
+      )}
+
       {/* Top Navigation Row */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <Link
@@ -501,6 +591,108 @@ export const TestResultsPage: React.FC = () => {
                     <span>Explanation Note {q.answer_source === 'ai_suggested' ? '(AI-suggested)' : ''}:</span>
                   </div>
                   <FormattedContent text={q.explanation} className="leading-relaxed text-slate-300 font-medium pl-5" />
+                </div>
+              )}
+
+              {/* Question Action Bar: Manual Override & AI Verification */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3.5 mt-3 border-t border-slate-800/80">
+                <div className="flex flex-wrap items-center gap-2">
+                  {isUserAttempted && !q.is_correct && (
+                    <button
+                      onClick={() => handleMarkPickAsCorrect(q)}
+                      disabled={overridingQuestionId === q.question_id}
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
+                      title="Mark your selected answer as the official correct answer and re-grade immediately"
+                    >
+                      {overridingQuestionId === q.question_id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
+                      ) : (
+                        <ThumbsUp className="w-3.5 h-3.5 text-emerald-400" />
+                      )}
+                      <span>Mark My Pick ({q.selected_options.join(', ')}) as Correct</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => handleVerifyWithAi(q)}
+                    disabled={verifyingQuestionId === q.question_id}
+                    className="px-3.5 py-1.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 border border-violet-400/30 text-violet-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
+                    title="Ask AI to solve this question, check Salesforce/exam concepts, and verify the true correct answer"
+                  >
+                    {verifyingQuestionId === q.question_id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
+                    ) : (
+                      <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                    )}
+                    <span>{aiResults[q.question_id] ? 'Re-verify with AI' : '✨ Verify with AI'}</span>
+                  </button>
+                </div>
+
+                <Link
+                  to={`/documents/${document_id}/review`}
+                  className="text-[11px] text-slate-400 hover:text-rose-300 flex items-center gap-1 transition"
+                >
+                  <Edit3 className="w-3 h-3 text-rose-400" /> Edit in Question Bank
+                </Link>
+              </div>
+
+              {/* AI Verification Drawer */}
+              {aiResults[q.question_id] && (
+                <div className="mt-3.5 p-4 rounded-2xl bg-gradient-to-br from-violet-950/40 via-slate-900/90 to-slate-950/80 border-2 border-violet-500/40 text-xs shadow-cozy space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between pb-2 border-b border-violet-500/20">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-violet-400 animate-pulse" />
+                      <span className="font-black text-violet-200 uppercase tracking-wider text-[11px] font-heading">
+                        AI Expert Verification &amp; Second Opinion
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setAiResults((prev) => {
+                          const copy = { ...prev };
+                          delete copy[q.question_id];
+                          return copy;
+                        });
+                      }}
+                      className="text-slate-400 hover:text-white cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-400 font-semibold">AI Recommended Correct Answer:</span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-violet-500/20 border border-violet-400/40 text-violet-300 font-black text-xs">
+                      Option {aiResults[q.question_id].suggested_options.join(', ')}
+                    </span>
+                    {aiResults[q.question_id].suggested_options.some(opt => q.selected_options.includes(opt)) && (
+                      <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" /> Matches Your Pick!
+                      </span>
+                    )}
+                  </div>
+
+                  {aiResults[q.question_id].explanation && (
+                    <div className="text-slate-300 leading-relaxed bg-slate-950/50 p-3 rounded-xl border border-violet-500/20 space-y-1">
+                      <strong className="text-violet-300 block font-bold font-heading">AI Reasoning:</strong>
+                      <FormattedContent text={aiResults[q.question_id].explanation} className="leading-relaxed text-slate-300 font-medium" />
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      onClick={() => handleApplyAiAnswer(q, aiResults[q.question_id])}
+                      disabled={overridingQuestionId === q.question_id}
+                      className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-black text-xs flex items-center gap-1.5 shadow transition cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50"
+                    >
+                      {overridingQuestionId === q.question_id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <CheckCheck className="w-3.5 h-3.5" />
+                      )}
+                      <span>Apply AI Answer Key &amp; Re-Grade</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

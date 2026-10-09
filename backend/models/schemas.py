@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_serializer
 from models.enums import DocumentStatus, AnswerSource, SessionMode, FileType
 
 
@@ -150,6 +150,14 @@ class AttemptHistoryItem(BaseModel):
     passed: Optional[bool] = None
     target_score_percentage: Optional[float] = None
 
+    @field_serializer("started_at", "submitted_at")
+    def serialize_history_datetimes(self, dt: Optional[datetime]) -> Optional[str]:
+        if dt is None:
+            return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
+
 
 class WeakQuestionItem(BaseModel):
     """Question item identified as high-error across past attempts."""
@@ -210,6 +218,12 @@ class TestSessionResponse(BaseModel):
     answers: List["AnswerSaveItem"] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("started_at")
+    def serialize_started_at(self, dt: datetime) -> str:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()
 
 
 class PracticeCheckRequest(BaseModel):
@@ -289,3 +303,11 @@ class SubmissionResponse(BaseModel):
     partial_credit: bool = False
     negative_marking: float = 0.0
     results: List[QuestionResult]
+
+    @field_serializer("started_at", "submitted_at")
+    def serialize_submission_datetimes(self, dt: Optional[datetime]) -> Optional[str]:
+        if dt is None:
+            return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.isoformat()

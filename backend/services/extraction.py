@@ -515,8 +515,19 @@ class ExtractionPipeline:
                 for q in merged_questions:
                     if q.question_number in answer_key_mappings:
                         if not q.correct_options or q.answer_source in ("none", "answer_key_in_document"):
-                            q.correct_options = answer_key_mappings[q.question_number]
-                            q.answer_source = AnswerSource.ANSWER_KEY_IN_DOCUMENT.value
+                            mapped_opts = answer_key_mappings[q.question_number]
+                            # Sanity check: Ensure the answer key label actually exists in the extracted options
+                            available_labels = {opt.label.upper() for opt in q.options}
+                            valid_opts = [o for o in mapped_opts if o.upper() in available_labels]
+                            if valid_opts:
+                                q.correct_options = valid_opts
+                                q.answer_source = AnswerSource.ANSWER_KEY_IN_DOCUMENT.value
+                            else:
+                                logger.warning(
+                                    f"Discarding invalid answer key {mapped_opts} for Question {q.question_number} "
+                                    f"(available options: {sorted(available_labels)})"
+                                )
+                                q.needs_review = True
 
             # Persist finalized merged questions in database
             if merged_questions:
@@ -576,7 +587,7 @@ async def suggest_answers_for_document(
 ) -> List[QuestionDB]:
     """
     Generates AI-suggested answers and explanations for questions in a document.
-    Only called when explicitly triggered by the user.
+    Batches in small chunks to respect LLM rate limits.
     """
     llm = provider or get_llm_provider()
     db = SessionLocal()
@@ -606,25 +617,34 @@ async def suggest_answers_for_document(
                 "options": q.options,
             })
 
-        suggestion_result = await llm.suggest_answers(questions_payload)
+        # Batch in chunks of 5 to remain comfortably within Groq/LLM rate limits
+        chunk_size = 5
+        sugg_map = {}
+        for i in range(0, len(questions_payload), chunk_size):
+            chunk = questions_payload[i:i + chunk_size]
+            res = await llm.suggest_answers(chunk)
+            for s in res.suggestions:
+                sugg_map[s.question_id] = s
+            if i + chunk_size < len(questions_payload):
+                await asyncio.sleep(1.0)
 
-        # Map suggestions back to DB questions
-        sugg_map = {s.question_id: s for s in suggestion_result.suggestions}
         for q in questions:
             sugg = sugg_map.get(q.id)
             if sugg and sugg.correct_options:
-                q.correct_options = sugg.correct_options
-                q.answer_source = AnswerSource.AI_SUGGESTED.value
-                q.explanation = sugg.explanation or "AI-generated explanation."
+                # Validate that suggested options exist
+                valid_labels = {opt["label"].upper() for opt in q.options}
+                filtered_sugg = [o for o in sugg.correct_options if o.upper() in valid_labels]
+                if filtered_sugg:
+                    q.correct_options = filtered_sugg
+                    q.answer_source = AnswerSource.AI_SUGGESTED.value
+                    q.explanation = sugg.explanation or "AI-verified answer and explanation."
+                    q.needs_review = False
 
         db.commit()
         for q in questions:
             db.refresh(q)
 
-        logger.info(
-            f"AI suggested answers for document {document_id}: "
-            f"{suggestion_result.total_tokens} tokens (Cost: ${suggestion_result.estimated_cost_usd:.5f})"
-        )
+        logger.info(f"AI suggested and verified answers for document {document_id} ({len(sugg_map)} questions processed)")
         return questions
 
     finally:
