@@ -9,7 +9,7 @@ import {
   BookOpenCheck,
   Check,
   X,
-  Sparkles,
+  Bot,
   KeyRound,
   Edit3,
   HelpCircle,
@@ -28,7 +28,6 @@ import { FormattedContent } from '../components/FormattedContent';
 import { submitSession, retakeSession, overrideSessionAnswer } from '../api/sessions';
 import { aiVerifyQuestion, type AiVerifyResponse } from '../api/questions';
 import type { SubmissionResponse, AnswerSource } from '../types';
-
 
 export const TestResultsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -62,7 +61,7 @@ export const TestResultsPage: React.FC = () => {
         correct_options: q.selected_options,
       });
       setResults(updated);
-      showToast(`Q${q.number || ''}: Pick [${q.selected_options.join(', ')}] marked as correct & scorecard updated!`, 'success');
+      showToast(`Q${q.number || ''}: Option [${q.selected_options.join(', ')}] marked as correct`, 'success');
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to update answer key', 'error');
     } finally {
@@ -98,7 +97,7 @@ export const TestResultsPage: React.FC = () => {
         delete copy[q.question_id];
         return copy;
       });
-      showToast(`Q${q.number || ''}: AI answer [${aiRes.suggested_options.join(', ')}] applied & scorecard updated!`, 'success');
+      showToast(`Answer key updated for Q${q.number || ''}`, 'success');
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Failed to apply AI answer', 'error');
     } finally {
@@ -107,83 +106,100 @@ export const TestResultsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    async function fetchGradedResults() {
-      if (results || !id) return;
+    async function fetchResults() {
+      if (!id || results) return;
       try {
         setLoading(true);
         const data = await submitSession(id);
         setResults(data);
-      } catch (err) {
-        console.error('Failed to fetch results:', err);
+      } catch (err: unknown) {
+        console.error('Failed to load session results:', err);
       } finally {
         setLoading(false);
       }
     }
-    fetchGradedResults();
+    fetchResults();
   }, [id, results]);
 
-  const handleRetake = async (mode: 'same' | 'wrong_and_unanswered') => {
+  const handleRetake = async (modeOption: 'same' | 'wrong_and_unanswered') => {
     if (!id) return;
     try {
       setRetaking(true);
-      const newSession = await retakeSession(id, mode);
+      const newSession = await retakeSession(id, modeOption);
       navigate(`/sessions/${newSession.id}/test`);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to launch retake session');
+      alert(err instanceof Error ? err.message : 'Retake failed');
       setRetaking(false);
     }
   };
 
-
-  if (loading || !results) {
+  if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto mb-4 animate-bounce">
-          <Trophy className="w-6 h-6" />
-        </div>
-        <p className="text-slate-400">Computing exam results and scorecard...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-orange-500 mx-auto mb-4" />
+        <p className="text-slate-400 font-medium">Evaluating responses and compiling results...</p>
+      </div>
+    );
+  }
+
+  if (!results) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <XCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+        <h2 className="text-xl font-bold text-white">Results Unavailable</h2>
+        <p className="text-slate-400 text-sm mt-1">Unable to load the requested scorecard.</p>
+        <button
+          onClick={() => navigate('/')}
+          className="mt-6 px-5 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-semibold cursor-pointer hover:bg-slate-700"
+        >
+          Return to Dashboard
+        </button>
       </div>
     );
   }
 
   const {
-    total_questions,
-    total_graded,
+    document_id,
+    score_percentage,
     correct_count,
     wrong_count,
     unanswered_count,
     ungraded_count,
-    score_percentage,
-    target_score_percentage,
-    passed,
+    total_graded,
+    total_questions,
     time_taken_seconds,
     avg_time_per_question_seconds,
-    results: questionsResult,
-    document_id,
+    passed,
+    target_score_percentage,
+    results: questionsBreakdown
   } = results;
 
-  // Format Time Taken
-  const mins = Math.floor(time_taken_seconds / 60);
-  const secs = time_taken_seconds % 60;
-  const formattedTime = `${mins}m ${secs}s`;
+  const flaggedCount = questionsBreakdown.filter((q) => q.flagged).length;
+  const canRetakeMistakes = wrong_count + unanswered_count > 0;
 
-  // Count flagged
-  const flaggedCount = questionsResult.filter((q) => q.flagged).length;
+  // Format Duration
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remSecs = secs % 60;
+    if (mins > 0) return `${mins}m ${remSecs}s`;
+    return `${remSecs}s`;
+  };
+  const formattedTime = formatTime(time_taken_seconds);
 
-  // Filtered Results
-  const filteredResults = questionsResult.filter((q) => {
-    if (filterType === 'correct') return q.is_correct;
-    if (filterType === 'wrong') return !q.is_correct && q.selected_options.length > 0 && q.is_graded;
+  // Filter Questions
+  const filteredResults = questionsBreakdown.filter((q) => {
+    if (filterType === 'wrong') return q.is_graded && !q.is_correct && q.selected_options.length > 0;
     if (filterType === 'unanswered') return q.selected_options.length === 0;
     if (filterType === 'flagged') return q.flagged;
+    if (filterType === 'correct') return q.is_correct;
     return true;
   });
 
-  const getSourceBadge = (source: AnswerSource) => {
+  const getSourceBadge = (source?: AnswerSource) => {
     switch (source) {
       case 'marked_in_document':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
             <CheckCircle2 className="w-3 h-3" /> Marked in Doc
           </span>
         );
@@ -195,8 +211,8 @@ export const TestResultsPage: React.FC = () => {
         );
       case 'ai_suggested':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-300 border border-violet-500/20">
-            <Sparkles className="w-3 h-3 text-violet-400" /> AI Suggested
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20">
+            <Bot className="w-3 h-3 text-orange-400" /> AI Suggested
           </span>
         );
       case 'manual':
@@ -208,164 +224,150 @@ export const TestResultsPage: React.FC = () => {
       default:
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">
-            <HelpCircle className="w-3 h-3" /> No Answer Key
+            <HelpCircle className="w-3 h-3" /> Not Graded
           </span>
         );
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-400';
-    if (score >= 60) return 'text-indigo-400';
-    if (score >= 40) return 'text-amber-400';
-    return 'text-rose-400';
+  const getScoreColor = (pct: number) => {
+    if (pct >= 80) return 'text-emerald-400';
+    if (pct >= 60) return 'text-amber-400';
+    return 'text-orange-400';
   };
 
-  const canRetakeMistakes = (wrong_count + unanswered_count) > 0;
-
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 relative">
+    <div className="max-w-5xl mx-auto px-4 py-8 font-sans">
       {/* Toast Notification */}
       {actionToast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 p-4 rounded-2xl border text-white shadow-2xl flex items-center gap-3 animate-fade-in ${
+          className={`fixed bottom-6 right-6 z-50 p-4 rounded-xl border text-sm font-medium shadow-2xl flex items-center gap-3 ${
             actionToast.type === 'error'
-              ? 'bg-rose-950/95 border-rose-500/50 text-rose-200'
-              : actionToast.type === 'info'
-              ? 'bg-violet-950/95 border-violet-500/50 text-violet-200'
-              : 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200'
+              ? 'bg-red-950/95 border-red-500/50 text-red-200'
+              : 'bg-slate-900 border-slate-700 text-white'
           }`}
         >
           {actionToast.type === 'error' ? (
-            <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0" />
-          ) : actionToast.type === 'info' ? (
-            <Sparkles className="w-5 h-5 text-violet-400 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
           ) : (
             <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
           )}
-          <span className="text-xs font-bold">{actionToast.message}</span>
+          <span>{actionToast.message}</span>
         </div>
       )}
 
-      {/* Top Navigation Row */}
-      <div className="flex items-center justify-between gap-4 mb-6">
+      {/* Back link */}
+      <div className="mb-6">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition font-medium"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Library
-        </Link>
-        <Link
-          to={`/documents/${document_id}/review`}
-          className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition"
-        >
-          <BookOpenCheck className="w-4 h-4" /> Review Question Bank
+          <ArrowLeft className="w-4 h-4" /> Return to Dashboard
         </Link>
       </div>
 
       {/* Score Hero Card */}
-      <div className="bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 sm:p-10 shadow-cozy relative overflow-hidden mb-8">
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-800/80">
+      <div className="bg-[#161B22] border border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-800">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-rose-500 via-pink-500 to-amber-500 text-white flex items-center justify-center shadow-cozy shadow-rose-500/20">
-              <Trophy className="w-8 h-8" />
+            <div className="w-14 h-14 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 flex items-center justify-center">
+              <Trophy className="w-7 h-7" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-rose-500 dark:text-rose-300">
-                  🎉 Exam Evaluation Complete
+                <span className="text-xs font-semibold uppercase tracking-wider text-orange-400">
+                  Evaluation Complete
                 </span>
                 {target_score_percentage !== null && target_score_percentage !== undefined && (
                   <span
-                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black border-2 shadow-sm ${
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold border ${
                       passed
-                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-400/30'
-                        : 'bg-rose-500/15 text-rose-600 dark:text-rose-300 border-rose-400/30'
+                        ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                        : 'bg-red-500/15 text-red-300 border-red-500/30'
                     }`}
                   >
                     {passed ? (
                       <>
-                        <Award className="w-3.5 h-3.5 text-emerald-500" /> PASSED 🌟 (Target {target_score_percentage}%)
+                        <Award className="w-3.5 h-3.5 text-emerald-400" /> PASSED (Target {target_score_percentage}%)
                       </>
                     ) : (
                       <>
-                        <AlertCircle className="w-3.5 h-3.5 text-rose-500" /> KEEP PRACTICING 🍵 (Target {target_score_percentage}%)
+                        <AlertCircle className="w-3.5 h-3.5 text-red-400" /> BELOW TARGET (Target {target_score_percentage}%)
                       </>
                     )}
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white mt-1 font-heading">
-                Your Practice Scorecard 🏆
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mt-1">
+                Examination Scorecard
               </h1>
             </div>
           </div>
 
           <div className="text-center sm:text-right">
-            <div className={`text-4xl sm:text-5xl font-black font-heading ${getScoreColor(score_percentage)}`}>
+            <div className={`text-4xl sm:text-5xl font-bold ${getScoreColor(score_percentage)}`}>
               {score_percentage}%
             </div>
-            <div className="text-xs text-slate-400 font-semibold mt-1">
-              Score: <strong className="text-white px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700/60 ml-0.5 mr-0.5">{results.score_earned}</strong> / {total_graded} Graded
+            <div className="text-xs text-slate-400 font-medium mt-1">
+              Score: <strong className="text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 ml-0.5 mr-0.5">{results.score_earned}</strong> / {total_graded} Graded
             </div>
           </div>
         </div>
 
         {/* Breakdown Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-6">
-          <div className="p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-            <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Correct</div>
-            <div className="text-xl font-black text-emerald-400 mt-1 flex items-center justify-center gap-1 font-sans">
+          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Correct</div>
+            <div className="text-xl font-bold text-emerald-400 mt-1 flex items-center justify-center gap-1">
               <CheckCircle2 className="w-4 h-4" />
               <span>{correct_count}</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-            <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Wrong</div>
-            <div className="text-xl font-black text-rose-400 mt-1 flex items-center justify-center gap-1 font-sans">
+          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Wrong</div>
+            <div className="text-xl font-bold text-red-400 mt-1 flex items-center justify-center gap-1">
               <XCircle className="w-4 h-4" />
               <span>{wrong_count}</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-            <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Unanswered</div>
-            <div className="text-xl font-black text-slate-300 mt-1 font-sans">
+          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Unanswered</div>
+            <div className="text-xl font-bold text-slate-300 mt-1">
               {unanswered_count}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-            <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Not Graded</div>
-            <div className="text-xl font-black text-amber-400 mt-1 font-sans" title="Excluded from scoring (no answer key)">
+          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Not Graded</div>
+            <div className="text-xl font-bold text-amber-400 mt-1" title="Excluded from scoring (no answer key)">
               {ungraded_count}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-            <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Total Time</div>
-            <div className="text-sm font-black text-slate-200 mt-1 font-mono">
+          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total Time</div>
+            <div className="text-sm font-semibold text-slate-200 mt-1 font-mono">
               {formattedTime}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-            <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Avg Time / Q</div>
-            <div className="text-sm font-black text-slate-200 mt-1 font-mono flex items-center justify-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-rose-400" />
+          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Avg Time / Q</div>
+            <div className="text-sm font-semibold text-slate-200 mt-1 font-mono flex items-center justify-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-orange-400" />
               <span>{avg_time_per_question_seconds}s</span>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-end gap-3 pt-8 mt-8 border-t border-slate-800/80">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-6 mt-6 border-t border-slate-800">
           <button
             onClick={() => handleRetake('same')}
             disabled={retaking}
-            className="px-4 py-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-750 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-cozy-pill disabled:opacity-50 cursor-pointer hover:scale-105 active:scale-95"
+            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
           >
             {retaking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
             <span>Retake Same Test</span>
@@ -374,17 +376,17 @@ export const TestResultsPage: React.FC = () => {
           <button
             onClick={() => handleRetake('wrong_and_unanswered')}
             disabled={retaking || !canRetakeMistakes}
-            className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-95 text-white text-xs font-black flex items-center gap-1.5 shadow-cozy transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:scale-105 active:scale-95"
+            className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Retake Mistakes ({wrong_count + unanswered_count}) ✨</span>
+            <span>Retake Mistakes ({wrong_count + unanswered_count})</span>
           </button>
 
           <Link
             to={`/documents/${document_id}/review`}
-            className="px-4 py-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-750 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-cozy-pill hover:scale-105 active:scale-95"
+            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 transition"
           >
-            <BookOpenCheck className="w-3.5 h-3.5 text-rose-400" />
+            <BookOpenCheck className="w-3.5 h-3.5 text-orange-400" />
             <span>Question Bank</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
@@ -392,49 +394,49 @@ export const TestResultsPage: React.FC = () => {
       </div>
 
       {/* Review Section Header & Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-3xl bg-slate-900/80 border border-slate-800/80 shadow-cozy mb-6">
-        <h2 className="text-base font-bold text-white flex items-center gap-2 font-heading">
-          <BookOpenCheck className="w-4 h-4 text-rose-400" />
-          Detailed Question Breakdown ({filteredResults.length})
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#161B22] border border-slate-800 mb-6">
+        <h2 className="text-sm font-bold text-white flex items-center gap-2">
+          <BookOpenCheck className="w-4 h-4 text-orange-400" />
+          Question Breakdown ({filteredResults.length})
         </h2>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setFilterType('all')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition shadow-cozy-pill cursor-pointer ${
-              filterType === 'all' ? 'bg-rose-500 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+              filterType === 'all' ? 'bg-orange-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
             }`}
           >
             All ({total_questions})
           </button>
           <button
             onClick={() => setFilterType('wrong')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition shadow-cozy-pill cursor-pointer ${
-              filterType === 'wrong' ? 'bg-rose-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+              filterType === 'wrong' ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
             }`}
           >
             Wrong ({wrong_count})
           </button>
           <button
             onClick={() => setFilterType('unanswered')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition shadow-cozy-pill cursor-pointer ${
-              filterType === 'unanswered' ? 'bg-amber-500 text-slate-950 font-black shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+              filterType === 'unanswered' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'
             }`}
           >
             Unanswered ({unanswered_count})
           </button>
           <button
             onClick={() => setFilterType('flagged')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition shadow-cozy-pill cursor-pointer ${
-              filterType === 'flagged' ? 'bg-amber-400 text-slate-950 font-black shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+              filterType === 'flagged' ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'
             }`}
           >
             Flagged ({flaggedCount})
           </button>
           <button
             onClick={() => setFilterType('correct')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition shadow-cozy-pill cursor-pointer ${
-              filterType === 'correct' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
+              filterType === 'correct' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
             }`}
           >
             Correct ({correct_count})
@@ -449,22 +451,22 @@ export const TestResultsPage: React.FC = () => {
           return (
             <div
               key={q.question_id}
-              className={`p-6 sm:p-7 rounded-3xl border-2 transition-all duration-200 shadow-cozy ${
+              className={`p-6 rounded-2xl border transition-colors ${
                 !q.is_graded
-                  ? 'bg-slate-900/60 border-slate-800/80'
+                  ? 'bg-[#161B22] border-slate-800'
                   : q.is_correct
-                  ? 'bg-slate-900/90 border-emerald-500/30'
+                  ? 'bg-[#161B22] border-emerald-500/40'
                   : q.is_partial
-                  ? 'bg-slate-900/90 border-amber-500/30'
+                  ? 'bg-[#161B22] border-amber-500/40'
                   : isUserAttempted
-                  ? 'bg-slate-900/90 border-rose-500/30'
-                  : 'bg-slate-900/60 border-slate-800/80'
+                  ? 'bg-[#161B22] border-red-500/40'
+                  : 'bg-[#161B22] border-slate-800'
               }`}
             >
               {/* Question Header */}
-              <div className="flex items-center justify-between pb-3.5 border-b border-slate-800/80 gap-3 mb-4">
+              <div className="flex items-center justify-between pb-3.5 border-b border-slate-800 gap-3 mb-4">
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-400/30 text-rose-500 dark:text-rose-300 font-black text-xs flex items-center justify-center font-heading">
+                  <span className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 font-bold text-xs flex items-center justify-center">
                     Q{q.number || idx + 1}
                   </span>
 
@@ -472,46 +474,46 @@ export const TestResultsPage: React.FC = () => {
 
                   {/* Grading Status Badge */}
                   {!q.is_graded ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700/60">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-800 px-3 py-1 rounded-md border border-slate-700">
                       <HelpCircle className="w-3.5 h-3.5 text-slate-500" /> Not Graded
                     </span>
                   ) : q.is_correct ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-emerald-600 dark:text-emerald-300 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-400/30 shadow-sm">
-                      <Check className="w-3.5 h-3.5 stroke-[3]" /> Correct 🌟 (+1.0)
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-300 bg-emerald-500/15 px-3 py-1 rounded-md border border-emerald-500/30">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" /> Correct (+1.0)
                     </span>
                   ) : q.is_partial ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-amber-600 dark:text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-400/30 shadow-sm">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 bg-amber-500/15 px-3 py-1 rounded-md border border-amber-500/30">
                       <CheckCheck className="w-3.5 h-3.5" /> Partial Credit (+{q.score_earned})
                     </span>
                   ) : isUserAttempted ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-black text-rose-600 dark:text-rose-300 bg-rose-500/15 px-3 py-1 rounded-full border border-rose-400/30 shadow-sm">
-                      <X className="w-3.5 h-3.5 stroke-[3]" /> Incorrect ({q.score_earned < 0 ? `${q.score_earned}` : '0'})
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-300 bg-red-500/15 px-3 py-1 rounded-md border border-red-500/30">
+                      <X className="w-3.5 h-3.5 stroke-[2.5]" /> Incorrect ({q.score_earned < 0 ? `${q.score_earned}` : '0'})
                     </span>
                   ) : (
-                    <span className="text-xs font-bold text-slate-400 bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700/60">
+                    <span className="text-xs font-medium text-slate-400 bg-slate-800 px-3 py-1 rounded-md border border-slate-700">
                       Unanswered (0)
                     </span>
                   )}
 
                   {/* Flagged indicator */}
                   {q.flagged && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-black text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-400/30">
-                      <Flag className="w-3 h-3 fill-current" /> Flagged ⭐
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-md border border-amber-500/30">
+                      <Flag className="w-3 h-3 fill-current" /> Flagged
                     </span>
                   )}
                 </div>
 
-                <div className="text-xs text-slate-400 font-mono font-bold">
+                <div className="text-xs text-slate-400 font-mono font-medium">
                   Time: {q.time_spent_seconds}s
                 </div>
               </div>
 
               {/* Shared Passage / Context */}
               {q.context && (
-                <div className="my-3 p-3.5 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-slate-300 text-xs shadow-inner">
-                  <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-rose-400 mb-1">
+                <div className="my-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs">
+                  <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-orange-400 mb-1">
                     <BookOpen className="w-3.5 h-3.5" />
-                    <span>Reading Passage / Context</span>
+                    <span>Reading Passage / Reference Context</span>
                   </div>
                   <FormattedContent text={q.context} className="leading-relaxed" />
                 </div>
@@ -519,15 +521,15 @@ export const TestResultsPage: React.FC = () => {
 
               {/* Figure / Diagram Image */}
               {q.figure_image_url && (
-                <div className="my-3 p-3 rounded-2xl bg-slate-950/40 border border-slate-800/80 flex flex-col items-center shadow-inner">
-                  <div className="flex items-center gap-1.5 self-start text-xs font-bold text-slate-400 mb-1.5">
-                    <ImageIcon className="w-3.5 h-3.5 text-rose-400" />
+                <div className="my-3 p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col items-center">
+                  <div className="flex items-center gap-1.5 self-start text-xs font-semibold text-slate-400 mb-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-orange-400" />
                     <span>Referenced Figure</span>
                   </div>
                   <img
                     src={q.figure_image_url}
                     alt={`Diagram for Q${q.number}`}
-                    className="max-h-56 object-contain rounded-xl border border-slate-800 shadow"
+                    className="max-h-56 object-contain rounded-lg border border-slate-800 shadow-sm"
                   />
                 </div>
               )}
@@ -535,7 +537,7 @@ export const TestResultsPage: React.FC = () => {
               {/* Question Text */}
               <FormattedContent
                 text={q.text}
-                className="text-white font-bold text-base sm:text-lg leading-relaxed mb-5 font-heading"
+                className="text-slate-100 font-semibold text-base leading-relaxed mb-4"
               />
 
               {/* Options Breakdown */}
@@ -544,38 +546,38 @@ export const TestResultsPage: React.FC = () => {
                   const isCorrectAnswer = q.correct_options.includes(opt.label);
                   const isUserSelected = q.selected_options.includes(opt.label);
 
-                  let borderStyle = 'border-slate-800/80 bg-slate-950/40 text-slate-300';
+                  let borderStyle = 'border-slate-800 bg-[#0E1117] text-slate-300';
                   if (isCorrectAnswer) {
-                    borderStyle = 'border-emerald-400/80 bg-emerald-500/10 text-emerald-200 ring-2 ring-emerald-400/20';
+                    borderStyle = 'border-emerald-500 bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-500/30';
                   } else if (isUserSelected && !isCorrectAnswer) {
-                    borderStyle = 'border-rose-400/80 bg-rose-500/10 text-rose-200 ring-2 ring-rose-400/20';
+                    borderStyle = 'border-red-500 bg-red-500/10 text-red-200 ring-1 ring-red-500/30';
                   }
 
                   return (
                     <div
                       key={opt.label}
-                      className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 text-xs font-medium transition-all ${borderStyle}`}
+                      className={`flex items-center gap-3 p-3 rounded-xl border text-xs font-medium transition-colors ${borderStyle}`}
                     >
                       <span
-                        className={`w-7 h-7 rounded-xl font-black flex items-center justify-center flex-shrink-0 text-xs shadow-sm ${
+                        className={`w-7 h-7 rounded-lg font-bold flex items-center justify-center flex-shrink-0 text-xs ${
                           isCorrectAnswer
-                            ? 'bg-emerald-500 text-white'
+                            ? 'bg-emerald-600 text-white'
                             : isUserSelected
-                            ? 'bg-rose-500 text-white'
+                            ? 'bg-red-600 text-white'
                             : 'bg-slate-800 text-slate-300'
                         }`}
                       >
                         {opt.label}
                       </span>
-                      <FormattedContent text={opt.text} as="span" className="flex-grow font-semibold" />
+                      <FormattedContent text={opt.text} as="span" className="flex-grow font-normal text-slate-200" />
                       {isCorrectAnswer && (
-                        <span className="text-[11px] font-black text-emerald-400 flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5 stroke-[3]" /> Correct
+                        <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5 stroke-[2.5]" /> Correct
                         </span>
                       )}
                       {isUserSelected && !isCorrectAnswer && (
-                        <span className="text-[11px] font-black text-rose-400 flex items-center gap-1">
-                          <X className="w-3.5 h-3.5 stroke-[3]" /> Your Pick
+                        <span className="text-[11px] font-semibold text-red-400 flex items-center gap-1">
+                          <X className="w-3.5 h-3.5 stroke-[2.5]" /> Your Pick
                         </span>
                       )}
                     </div>
@@ -585,24 +587,24 @@ export const TestResultsPage: React.FC = () => {
 
               {/* Explanation */}
               {q.explanation && (
-                <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-xs text-slate-300 space-y-1.5 shadow-inner">
-                  <div className="flex items-center gap-1.5 text-rose-400 font-bold font-heading">
-                    {q.answer_source === 'ai_suggested' && <Sparkles className="w-3.5 h-3.5 text-rose-400" />}
-                    <span>Explanation Note {q.answer_source === 'ai_suggested' ? '(AI-suggested)' : ''}:</span>
+                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-1">
+                  <div className="flex items-center gap-1.5 text-orange-400 font-semibold">
+                    {q.answer_source === 'ai_suggested' && <Bot className="w-3.5 h-3.5 text-orange-400" />}
+                    <span>Explanation {q.answer_source === 'ai_suggested' ? '(AI Verified)' : ''}:</span>
                   </div>
-                  <FormattedContent text={q.explanation} className="leading-relaxed text-slate-300 font-medium pl-5" />
+                  <FormattedContent text={q.explanation} className="leading-relaxed text-slate-300 font-normal pl-4" />
                 </div>
               )}
 
-              {/* Question Action Bar: Manual Override & AI Verification */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-3.5 mt-3 border-t border-slate-800/80">
+              {/* Question Action Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3.5 mt-3 border-t border-slate-800">
                 <div className="flex flex-wrap items-center gap-2">
                   {isUserAttempted && !q.is_correct && (
                     <button
                       onClick={() => handleMarkPickAsCorrect(q)}
                       disabled={overridingQuestionId === q.question_id}
-                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
-                      title="Mark your selected answer as the official correct answer and re-grade immediately"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                      title="Set your selected option as correct and update results"
                     >
                       {overridingQuestionId === q.question_id ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
@@ -616,34 +618,33 @@ export const TestResultsPage: React.FC = () => {
                   <button
                     onClick={() => handleVerifyWithAi(q)}
                     disabled={verifyingQuestionId === q.question_id}
-                    className="px-3.5 py-1.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 border border-violet-400/30 text-violet-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 shadow-sm"
-                    title="Ask AI to solve this question, check Salesforce/exam concepts, and verify the true correct answer"
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-orange-400 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
                   >
                     {verifyingQuestionId === q.question_id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-violet-400" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-400" />
                     ) : (
-                      <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                      <Bot className="w-3.5 h-3.5 text-orange-400" />
                     )}
-                    <span>{aiResults[q.question_id] ? 'Re-verify with AI' : '✨ Verify with AI'}</span>
+                    <span>{aiResults[q.question_id] ? 'Re-verify with AI' : 'Verify with AI'}</span>
                   </button>
                 </div>
 
                 <Link
                   to={`/documents/${document_id}/review`}
-                  className="text-[11px] text-slate-400 hover:text-rose-300 flex items-center gap-1 transition"
+                  className="text-[11px] text-slate-400 hover:text-orange-300 flex items-center gap-1 transition"
                 >
-                  <Edit3 className="w-3 h-3 text-rose-400" /> Edit in Question Bank
+                  <Edit3 className="w-3 h-3 text-orange-400" /> Edit in Question Bank
                 </Link>
               </div>
 
               {/* AI Verification Drawer */}
               {aiResults[q.question_id] && (
-                <div className="mt-3.5 p-4 rounded-2xl bg-gradient-to-br from-violet-950/40 via-slate-900/90 to-slate-950/80 border-2 border-violet-500/40 text-xs shadow-cozy space-y-3 animate-fade-in">
-                  <div className="flex items-center justify-between pb-2 border-b border-violet-500/20">
+                <div className="mt-3.5 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-violet-400 animate-pulse" />
-                      <span className="font-black text-violet-200 uppercase tracking-wider text-[11px] font-heading">
-                        AI Expert Verification &amp; Second Opinion
+                      <Bot className="w-4 h-4 text-orange-400" />
+                      <span className="font-semibold text-slate-200 uppercase tracking-wider text-[11px]">
+                        AI Verification Analysis
                       </span>
                     </div>
                     <button
@@ -661,21 +662,21 @@ export const TestResultsPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-slate-400 font-semibold">AI Recommended Correct Answer:</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-violet-500/20 border border-violet-400/40 text-violet-300 font-black text-xs">
+                    <span className="text-slate-400 font-medium">Recommended Correct Option:</span>
+                    <span className="px-2 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-orange-300 font-bold text-xs">
                       Option {aiResults[q.question_id].suggested_options.join(', ')}
                     </span>
                     {aiResults[q.question_id].suggested_options.some(opt => q.selected_options.includes(opt)) && (
-                      <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" /> Matches Your Pick!
+                      <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                        <Check className="w-3.5 h-3.5 stroke-[2.5]" /> Matches Your Selection
                       </span>
                     )}
                   </div>
 
                   {aiResults[q.question_id].explanation && (
-                    <div className="text-slate-300 leading-relaxed bg-slate-950/50 p-3 rounded-xl border border-violet-500/20 space-y-1">
-                      <strong className="text-violet-300 block font-bold font-heading">AI Reasoning:</strong>
-                      <FormattedContent text={aiResults[q.question_id].explanation} className="leading-relaxed text-slate-300 font-medium" />
+                    <div className="text-slate-300 leading-relaxed bg-[#0E1117] p-3 rounded-lg border border-slate-800 space-y-1">
+                      <strong className="text-orange-400 block font-semibold">AI Reasoning:</strong>
+                      <FormattedContent text={aiResults[q.question_id].explanation} className="leading-relaxed text-slate-300 font-normal" />
                     </div>
                   )}
 
@@ -683,14 +684,14 @@ export const TestResultsPage: React.FC = () => {
                     <button
                       onClick={() => handleApplyAiAnswer(q, aiResults[q.question_id])}
                       disabled={overridingQuestionId === q.question_id}
-                      className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-black text-xs flex items-center gap-1.5 shadow transition cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50"
+                      className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
                     >
                       {overridingQuestionId === q.question_id ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
                         <CheckCheck className="w-3.5 h-3.5" />
                       )}
-                      <span>Apply AI Answer Key &amp; Re-Grade</span>
+                      <span>Apply AI Answer &amp; Re-Grade</span>
                     </button>
                   </div>
                 </div>

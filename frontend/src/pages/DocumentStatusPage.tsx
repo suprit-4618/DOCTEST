@@ -5,7 +5,6 @@ import {
   XCircle, 
   Loader2, 
   RotateCcw, 
-  Sparkles,
   Eye,
   BookOpenCheck,
   AlertTriangle
@@ -119,48 +118,48 @@ export const DocumentStatusPage: React.FC = () => {
       </div>
 
       {/* Main Status Container */}
-      <div className="bg-slate-900 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 shadow-cozy mb-8">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm mb-8">
         {/* Processing State */}
         {isProcessing && (
           <div className="space-y-6">
             <div className="flex items-center gap-3.5">
-              <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-400/25 text-rose-400 shadow-sm">
-                <Loader2 className="w-6 h-6 animate-spin" />
+              <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 shadow-sm">
+                <Loader2 className="w-5 h-5 animate-spin" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white font-heading">Brewing Your Test Paper 🍵...</h2>
+                <h2 className="text-base font-bold text-white font-heading">Processing Document...</h2>
                 <p className="text-xs text-slate-400">
-                  Relax while we gently read and normalize every page into high-clarity sheets.
+                  Extracting multiple-choice questions, isolating option stems, and preparing exam review.
                 </p>
               </div>
             </div>
 
             {/* Progress Bar */}
             <div className="space-y-2">
-              <div className="flex justify-between text-xs text-slate-400 font-bold">
+              <div className="flex justify-between text-xs text-slate-400 font-semibold">
                 <span>
                   Processing page {doc?.pages_processed || 0} of {doc?.page_count || 1}
                 </span>
-                <span className="font-mono text-rose-400">{progressPercent}%</span>
+                <span className="font-mono text-orange-400">{progressPercent}%</span>
               </div>
-              <div className="w-full bg-slate-950/60 rounded-full h-3 overflow-hidden p-0.5 border border-slate-700/60 shadow-inner">
+              <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
                 <div
-                  className="bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 h-full rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${Math.max(progressPercent, 5)}%` }}
+                  className="bg-emerald-600 h-full rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${Math.max(progressPercent, 4)}%` }}
                 />
               </div>
             </div>
 
             {/* Stepper */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-800/80 text-xs font-bold">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-800 text-xs font-semibold">
               <div className="flex items-center gap-2 text-emerald-400">
-                <CheckCircle2 className="w-4 h-4" /> 1. Uploaded &amp; Verified
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> 1. Uploaded &amp; Verified
               </div>
-              <div className="flex items-center gap-2 text-rose-400 animate-pulse">
-                <Loader2 className="w-4 h-4 animate-spin" /> 2. Normalizing Pages
+              <div className="flex items-center gap-2 text-orange-400">
+                <Loader2 className="w-4 h-4 animate-spin text-orange-500" /> 2. Normalizing Pages
               </div>
-              <div className="flex items-center gap-2 text-slate-400">
-                <Sparkles className="w-4 h-4" /> 3. MCQ Extraction
+              <div className="flex items-center gap-2 text-slate-500">
+                <BookOpenCheck className="w-4 h-4" /> 3. Question Extraction
               </div>
             </div>
           </div>
@@ -169,10 +168,10 @@ export const DocumentStatusPage: React.FC = () => {
         {/* Failed State */}
         {isFailed && (
           <div className="space-y-6">
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-red-950/40 border border-red-800/60 text-red-300 shadow-cozy">
-              <XCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-4 p-5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300">
+              <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold text-red-200 font-heading">Ingestion Encountered an Issue</h3>
+                <h3 className="font-bold text-red-200 text-sm">Ingestion Encountered an Issue</h3>
                 <p className="text-xs text-red-300/90 mt-1">
                   {doc?.error_message || 'An unexpected error occurred while processing the document.'}
                 </p>
@@ -181,7 +180,7 @@ export const DocumentStatusPage: React.FC = () => {
 
             <button
               onClick={() => navigate('/upload')}
-              className="px-5 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-750 text-white text-xs font-bold transition shadow-cozy-pill cursor-pointer"
+              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-white text-xs font-semibold transition cursor-pointer"
             >
               Try Uploading Again
             </button>
@@ -192,13 +191,13 @@ export const DocumentStatusPage: React.FC = () => {
         {isExtracted && (
           <div className="space-y-6">
             {doc?.question_count === 0 ? (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-400/30 shadow-sm">
-                <div className="flex items-center gap-3.5">
-                  <AlertTriangle className="w-6 h-6 text-amber-400 flex-shrink-0" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
                   <div>
-                    <h3 className="font-bold text-white font-heading">No Questions Extracted Yet</h3>
-                    <p className="text-xs text-amber-300/90">
-                      Pages were rendered ({doc?.page_count} pages), but 0 MCQs have been detected so far.
+                    <h3 className="font-bold text-slate-100 text-sm">No Questions Extracted Yet</h3>
+                    <p className="text-xs text-slate-400">
+                      Pages were rendered ({doc?.page_count} pages), but 0 MCQs were detected.
                     </p>
                   </div>
                 </div>
@@ -207,20 +206,20 @@ export const DocumentStatusPage: React.FC = () => {
                   <button
                     onClick={handleTriggerExtraction}
                     disabled={extracting}
-                    className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-95 text-white text-xs font-black shadow-cozy transition cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95 disabled:opacity-50"
+                    className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
-                    {extracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    {extracting ? 'Extracting Questions...' : 'Run AI Extraction ✨'}
+                    {extracting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                    <span>{extracting ? 'Extracting...' : 'Retry Extraction'}</span>
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-emerald-500/10 border-2 border-emerald-400/30 shadow-sm">
-                <div className="flex items-center gap-3.5">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-400 flex-shrink-0" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                   <div>
-                    <h3 className="font-bold text-white font-heading">Document Ready for Practice! 🌟</h3>
-                    <p className="text-xs text-emerald-300/90">
+                    <h3 className="font-bold text-slate-100 text-sm">Document Extraction Complete</h3>
+                    <p className="text-xs text-slate-400">
                       Successfully extracted {doc?.question_count} questions from {doc?.page_count} page{doc && doc.page_count > 1 ? 's' : ''}.
                     </p>
                   </div>
@@ -229,31 +228,38 @@ export const DocumentStatusPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => navigate(`/documents/${doc?.id}/review`)}
-                    className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-95 text-white text-xs font-black shadow-cozy transition cursor-pointer flex items-center gap-1.5 hover:scale-105 active:scale-95"
+                    className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center gap-1.5"
                   >
-                    <BookOpenCheck className="w-4 h-4" /> Review Questions ✨
+                    <BookOpenCheck className="w-3.5 h-3.5" />
+                    <span>Review Questions</span>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/documents/${doc?.id}/setup`)}
+                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span>Start Test</span>
                   </button>
                 </div>
               </div>
             )}
 
             {/* Quick Metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-                <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Pages</div>
-                <div className="text-xl font-black text-white mt-1 font-heading">{doc?.page_count}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-center">
+                <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Pages</div>
+                <div className="text-lg font-bold text-slate-100 mt-0.5">{doc?.page_count}</div>
               </div>
-              <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-                <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Questions</div>
-                <div className="text-xl font-black text-rose-400 mt-1 font-heading">{doc?.question_count || 0}</div>
+              <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-center">
+                <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Questions</div>
+                <div className="text-lg font-bold text-orange-400 mt-0.5">{doc?.question_count || 0}</div>
               </div>
-              <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-                <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Resolution</div>
-                <div className="text-xl font-black text-slate-200 mt-1 font-mono">150 DPI</div>
+              <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-center">
+                <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Resolution</div>
+                <div className="text-lg font-bold text-slate-200 mt-0.5 font-mono">150 DPI</div>
               </div>
-              <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 shadow-inner text-center">
-                <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Status</div>
-                <div className="text-xl font-black text-emerald-400 mt-1 capitalize font-heading">{doc?.status}</div>
+              <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-center">
+                <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Status</div>
+                <div className="text-lg font-bold text-emerald-400 mt-0.5 capitalize">{doc?.status}</div>
               </div>
             </div>
           </div>

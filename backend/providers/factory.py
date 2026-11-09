@@ -20,7 +20,7 @@ def get_llm_provider(
 
     if name == "groq":
         key = api_key or settings.GROQ_API_KEY
-        model = model_name or settings.GROQ_MODEL or "openai/gpt-oss-120b"
+        model = model_name or settings.GROQ_MODEL or "qwen/qwen3.8-27b"
         return GroqProvider(api_key=key, model_name=model)
 
     if name == "gemini":

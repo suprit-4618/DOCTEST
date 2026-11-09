@@ -4,135 +4,153 @@
 
 @layer base {
   /* ====================================================================
-     COZY DESIGN SYSTEM - ROOT TOKENS
-     Theme 1 (Default): Warm Milk Tea & Cream Pastel (Light & Cozy)
-     Theme 2: Cozy Cocoa & Lofi Night (Dark & Warm)
+     ARTISTIC ORANGE & FOREST GREEN DESIGN SYSTEM
+     Theme: Professional Editorial / Architectural Canvas
+     Primary Accent: Burnt Terracotta / Warm Orange
+     Secondary Accent: Deep Forest / Sage Green
      ==================================================================== */
 
   :root,
-  [data-theme="cream"] {
-    /* Base Canvas & Surfaces */
-    --color-slate-950: #FAF7F2; /* Warm Creamy Oat Milk Background */
-    --color-slate-900: #FFFFFF; /* Crisp Marshmallow Card */
-    --color-slate-850: #F5EFEB; /* Inner elevated surfaces */
-    --color-slate-800: #EADBCE; /* Soft warm borders */
-    --color-slate-750: #DFD1C4; /* Hover borders */
-    --color-slate-700: #CBB9AA; /* Active borders */
-
-    /* Typography (Warm Espresso / Mocha Palette) */
-    --color-slate-600: #8C7B72; /* Muted hints */
-    --color-slate-500: #78675E; /* Secondary text */
-    --color-slate-400: #5C4D44; /* Body secondary */
-    --color-slate-300: #42352D; /* Body text */
-    --color-slate-200: #2E231D; /* Strong text */
-    --color-slate-100: #231914; /* Headings (Deep Chocolate Espresso) */
-    --color-slate-50:  #140E0A;
-
-    /* Sweet Strawberry Coral & Warm Rose Accents */
-    --color-indigo-950: #FFF1F2;
-    --color-indigo-900: #FFE4E6;
-    --color-indigo-800: #FECDD3;
-    --color-indigo-700: #FDA4AF;
-    --color-indigo-600: #F43F5E; /* Bouncy Rose Button */
-    --color-indigo-500: #FB7185; /* Warm Strawberry Accent */
-    --color-indigo-400: #E11D48; /* Accent badge text */
-    --color-indigo-300: #BE123C;
-    --color-indigo-200: #9F1239;
-    --color-indigo-100: #881337;
-    --color-indigo-50:  #4C0519;
-
-    /* Subtle Warm Accent */
-    --color-violet-400: #9061F9;
-    --color-violet-500: #7E3AF2;
-    --color-violet-600: #6C2BD9;
-
-    --card-shadow: 0 4px 16px -2px rgba(60, 40, 30, 0.06), 0 1px 3px rgba(60, 40, 30, 0.04);
-    --pill-shadow: 0 2px 8px 0 rgba(225, 91, 67, 0.15);
-  }
-
-  /* Cozy Cocoa Cafe (Warm Dark / Lofi Night Mode) */
+  [data-theme="dark"],
   [data-theme="cocoa"] {
-    --color-slate-950: #1C1719; /* Deep Warm Cocoa Canvas */
-    --color-slate-900: #262023; /* Warm Cocoa Solid Card */
-    --color-slate-850: #30292D; /* Inset sub-card */
-    --color-slate-800: #443B40; /* Soft Cocoa Border */
-    --color-slate-750: #574B52; /* Hover border */
-    --color-slate-700: #6D5F66;
+    /* Base Canvas & Architectural Surfaces (Dark) */
+    --color-slate-950: #0E1117; /* Deep Obsidian Canvas */
+    --color-slate-900: #161B22; /* Card Surface */
+    --color-slate-850: #1D232C; /* Inset Surface */
+    --color-slate-800: #28303E; /* Crisp Border */
+    --color-slate-750: #374357; /* Hover Border */
+    --color-slate-700: #4B5B74; /* Active Border */
 
-    --color-slate-600: #8D7D85;
-    --color-slate-500: #A999A1;
-    --color-slate-400: #C5B6BE; /* Soft readable secondary */
-    --color-slate-300: #E2D6DC;
-    --color-slate-200: #F3EAEF;
-    --color-slate-100: #FAF4F7; /* Warm Marshmallow Headings */
+    /* Typography (High-Contrast Neutral) */
+    --color-slate-600: #718096; /* Subtle notes */
+    --color-slate-500: #8D9BAE; /* Secondary text */
+    --color-slate-400: #A8B5C7; /* Body secondary */
+    --color-slate-300: #CBD5E1; /* Body text */
+    --color-slate-200: #E2E8F0; /* High contrast body */
+    --color-slate-100: #F8FAFC; /* Crisp Headings */
     --color-slate-50:  #FFFFFF;
 
-    /* Warm Terracotta & Peach Accents */
-    --color-indigo-950: #3B120F;
-    --color-indigo-900: #5E1F1A;
-    --color-indigo-800: #862F27;
-    --color-indigo-700: #B24236;
-    --color-indigo-600: #DC5846;
-    --color-indigo-500: #EA6C55;
-    --color-indigo-400: #F59B8B;
-    --color-indigo-300: #FAC6BC;
-    --color-indigo-200: #FDE4DF;
-    --color-indigo-100: #FFF3EE;
-    --color-indigo-50:  #FFFFFF;
+    /* Artistic Burnt Orange / Terracotta Accents */
+    --color-orange-950: #2A0F05;
+    --color-orange-900: #451A0A;
+    --color-orange-800: #7C2D12;
+    --color-orange-700: #9A3412;
+    --color-orange-600: #C2410C;
+    --color-orange-500: #EA580C; /* Primary Action */
+    --color-orange-400: #FB923C;
+    --color-orange-300: #FDBA74;
+    --color-orange-200: #FED7AA;
+    --color-orange-100: #FFEDD5;
+    --color-orange-50:  #FFF7ED;
 
-    /* Lavender / Amethyst Night */
-    --color-violet-400: #C4B5FD;
-    --color-violet-500: #A78BFA;
-    --color-violet-600: #8B5CF6;
+    /* Forest & Sage Green Accents */
+    --color-emerald-950: #052E16;
+    --color-emerald-900: #14532D;
+    --color-emerald-800: #166534;
+    --color-emerald-700: #15803D;
+    --color-emerald-600: #16A34A; /* Verified / Success */
+    --color-emerald-500: #22C55E;
+    --color-emerald-400: #4ADE80;
+    --color-emerald-300: #86EFAC;
+    --color-emerald-200: #BBF7D0;
+    --color-emerald-100: #DCFCE7;
+    --color-emerald-50:  #F0FDF4;
 
-    --card-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.4);
-    --pill-shadow: 0 3px 12px 0 rgba(220, 88, 70, 0.25);
+    --card-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.25);
+    --pill-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  /* Architectural Light Mode (Warm Gallery Linen) */
+  [data-theme="light"],
+  [data-theme="cream"] {
+    /* Base Canvas & Architectural Surfaces (Light) */
+    --color-slate-950: #F9F7F2; /* Warm Gallery Linen */
+    --color-slate-900: #FFFFFF; /* Crisp Solid Card */
+    --color-slate-850: #F3EFE8; /* Inset Surface */
+    --color-slate-800: #E4DDD3; /* Subtle Border */
+    --color-slate-750: #D3CAC0; /* Hover Border */
+    --color-slate-700: #BCB1A4; /* Active Border */
+
+    /* Typography (Warm Editorial Slate) */
+    --color-slate-600: #8C8276;
+    --color-slate-500: #6B6258;
+    --color-slate-400: #524B43;
+    --color-slate-300: #38322B;
+    --color-slate-200: #24201B;
+    --color-slate-100: #14120E; /* Headings */
+    --color-slate-50:  #0A0907;
+
+    /* Artistic Burnt Orange / Terracotta Accents */
+    --color-orange-950: #FFF7ED;
+    --color-orange-900: #FFEDD5;
+    --color-orange-800: #FED7AA;
+    --color-orange-700: #FB923C;
+    --color-orange-600: #EA580C;
+    --color-orange-500: #C2410C; /* Terracotta Primary */
+    --color-orange-400: #9A3412;
+    --color-orange-300: #7C2D12;
+    --color-orange-200: #581C08;
+    --color-orange-100: #431407;
+    --color-orange-50:  #270B04;
+
+    /* Forest & Sage Green Accents */
+    --color-emerald-950: #F0FDF4;
+    --color-emerald-900: #DCFCE7;
+    --color-emerald-800: #BBF7D0;
+    --color-emerald-700: #4ADE80;
+    --color-emerald-600: #16A34A;
+    --color-emerald-500: #15803D; /* Forest Green */
+    --color-emerald-400: #166534;
+    --color-emerald-300: #14532D;
+    --color-emerald-200: #0B3A1E;
+    --color-emerald-100: #052E16;
+    --color-emerald-50:  #021B0C;
+
+    --card-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --pill-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
   html, body {
     background-color: var(--color-slate-950);
     color: var(--color-slate-300);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', Inter, system-ui, -apple-system, sans-serif;
     min-height: 100vh;
-    background-image: radial-gradient(var(--color-slate-800) 1px, transparent 1px);
-    background-size: 24px 24px;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-    letter-spacing: -0.015em;
+    font-family: 'Plus Jakarta Sans', Outfit, sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 700;
   }
 
-  /* Custom Cute Pill Scrollbar */
+  /* Refined, Minimal Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: var(--color-slate-750);
-    border-radius: 9999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
+    border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-indigo-500);
+    background: var(--color-orange-500);
   }
 }
 
 /* Light Theme Heading Text Alignment */
-:root:not([data-theme="cocoa"]) h1.text-white,
-:root:not([data-theme="cocoa"]) h2.text-white,
-:root:not([data-theme="cocoa"]) h3.text-white,
-:root:not([data-theme="cocoa"]) h4.text-white,
-:root:not([data-theme="cocoa"]) p.text-white,
-:root:not([data-theme="cocoa"]) span.text-white:not(button *):not(a[class*="bg-"] *):not([class*="bg-rose"] *):not([class*="bg-indigo"] *):not([class*="bg-emerald"] *):not([class*="bg-violet"] *) {
+[data-theme="light"] h1.text-white,
+[data-theme="light"] h2.text-white,
+[data-theme="light"] h3.text-white,
+[data-theme="light"] h4.text-white,
+[data-theme="light"] p.text-white,
+[data-theme="light"] span.text-white:not(button *):not(a[class*="bg-"] *) {
   color: var(--color-slate-100) !important;
 }
 
@@ -141,49 +159,79 @@
 [data-theme="cream"] h3.text-white,
 [data-theme="cream"] h4.text-white,
 [data-theme="cream"] p.text-white,
-[data-theme="cream"] span.text-white:not(button *):not(a[class*="bg-"] *):not([class*="bg-rose"] *):not([class*="bg-indigo"] *):not([class*="bg-emerald"] *):not([class*="bg-violet"] *) {
+[data-theme="cream"] span.text-white:not(button *):not(a[class*="bg-"] *) {
   color: var(--color-slate-100) !important;
 }
 
-/* Bouncy Cozy Button Micro-interactions */
+/* Refined Button Interactions */
 button:not(:disabled),
 a[role="button"] {
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease, background-color 0.15s ease;
-}
-button:not(:disabled):active,
-a[role="button"]:active {
-  transform: scale(0.97);
+  transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
-/* Accessible focus outlines with soft warm glow */
+/* Clean accessible focus outlines */
 *:focus-visible {
-  @apply outline-none ring-2 ring-rose-400 ring-offset-2 ring-offset-transparent transition-shadow;
+  outline: 2px solid var(--color-orange-500);
+  outline-offset: 2px;
 }
 
-/* Rich Formatted Content & KaTeX styling */
+/* Formatted Content & KaTeX styling */
 .formatted-content-root {
-  @apply leading-relaxed;
+  line-height: 1.65;
 }
 
 .formatted-code-block {
-  @apply relative my-3 rounded-2xl bg-slate-900 border border-slate-800 p-4 font-mono text-xs md:text-sm text-indigo-400 overflow-x-auto shadow-sm;
+  position: relative;
+  margin: 0.75rem 0;
+  border-radius: 0.5rem;
+  background-color: var(--color-slate-850);
+  border: 1px solid var(--color-slate-800);
+  padding: 1rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--color-slate-200);
+  overflow-x: auto;
 }
 
 .code-lang-tag {
-  @apply absolute top-2 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-slate-800 text-slate-400 border border-slate-700;
-  opacity: 0.85;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background-color: var(--color-slate-800);
+  color: var(--color-slate-400);
+  border: 1px solid var(--color-slate-700);
 }
 
 .formatted-inline-code {
-  @apply font-mono text-[0.9em] px-2 py-0.5 rounded-lg bg-slate-800 text-rose-400 border border-slate-700 mx-0.5;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875em;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  background-color: var(--color-slate-850);
+  color: var(--color-orange-400);
+  border: 1px solid var(--color-slate-800);
+  margin: 0 0.125rem;
 }
 
 .katex-display-wrapper {
-  @apply my-3 overflow-x-auto py-2 text-center text-indigo-400;
+  margin: 0.75rem 0;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  text-align: center;
+  color: var(--color-slate-100);
 }
 
 .katex-error {
-  @apply text-rose-400 font-mono text-xs my-1;
+  color: #EF4444;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  margin: 0.25rem 0;
 }
 
 /* RTL directional text alignment */

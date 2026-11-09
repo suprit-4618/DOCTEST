@@ -225,12 +225,24 @@ def stitch_and_merge_questions(
             # 1. Clean question text and repair OCR tokens
             new_q.question_text = fix_ocr_personalization_tokens(new_q.question_text.strip())
 
-            # 2. Normalize option labels and repair token corruptions
+            # 2. Normalize option labels, repair tokens, and guard against empty text
             for idx, opt in enumerate(new_q.options):
                 opt.label = normalize_option_label(opt.label, idx)
                 # Strip leading label redundant text if present (e.g. "A. Content" -> "Content")
                 cleaned_text = re.sub(r"^[A-Fa-f0-9ivIV]{1,3}[\.\)\:\-\s]+\s*", "", opt.text.strip())
-                opt.text = fix_ocr_personalization_tokens(cleaned_text if cleaned_text else opt.text.strip())
+                opt_str = fix_ocr_personalization_tokens(cleaned_text if cleaned_text else opt.text.strip())
+                if not opt_str:
+                    q_text = new_q.question_text
+                    has_no_error = any("no error" in o.text.lower() for o in new_q.options)
+                    if has_no_error:
+                        parts = [p.strip() for p in re.split(r"[/|•\n]|\([a-d]\)|\b[a-d]\)", q_text, flags=re.IGNORECASE) if p.strip()]
+                        if len(parts) >= len(new_q.options) - 1 and idx < len(parts):
+                            opt_str = parts[idx]
+                        else:
+                            opt_str = f"Part ({opt.label})"
+                    else:
+                        opt_str = f"Option {opt.label}"
+                opt.text = opt_str
 
             if new_q.confidence < 0.8:
                 new_q.needs_review = True
@@ -325,7 +337,7 @@ class ExtractionPipeline:
     def __init__(
         self,
         provider: Optional[BaseLLMProvider] = None,
-        batch_size: int = 2,
+        batch_size: int = 1,
         overlap: int = 0,
         max_concurrency: int = 1,
     ):
@@ -414,7 +426,34 @@ class ExtractionPipeline:
                     logger.info(f"Extraction for document {document_id} cancelled by user during batch {batch_idx + 1}.")
                     break
 
-                batch_res = await self._process_single_batch(document_id, batch)
+                try:
+                    batch_res = await self._process_single_batch(document_id, batch)
+                except Exception as batch_err:
+                    logger.warning(f"Batch {batch_idx + 1} ({batch}) failed: {batch_err}. Attempting single-page fallback...")
+                    if len(batch) > 1:
+                        sub_questions: List[ExtractedQuestionItem] = []
+                        p_tokens = 0
+                        c_tokens = 0
+                        t_tokens = 0
+                        for single_page in batch:
+                            try:
+                                single_res = await self._process_single_batch(document_id, [single_page])
+                                sub_questions.extend(single_res.questions)
+                                p_tokens += single_res.prompt_tokens
+                                c_tokens += single_res.completion_tokens
+                                t_tokens += single_res.total_tokens
+                            except Exception as sp_err:
+                                logger.error(f"Single-page fallback for page {single_page} failed: {sp_err}")
+                        batch_res = ExtractionBatchResult(
+                            questions=sub_questions,
+                            prompt_tokens=p_tokens,
+                            completion_tokens=c_tokens,
+                            total_tokens=t_tokens,
+                        )
+                    else:
+                        logger.error(f"Single-page batch {batch} failed: {batch_err}")
+                        continue
+
                 batch_results.append(batch_res)
 
                 # Persist batch questions incrementally
@@ -447,6 +486,9 @@ class ExtractionPipeline:
                 max_page_in_batch = max(batch) if batch else 0
                 doc.pages_processed = min(doc.page_count, max(doc.pages_processed, max_page_in_batch))
                 db.commit()
+
+                # Polite pacing between batches to respect API rate limits
+                await asyncio.sleep(4.0)
 
             # Check if cancelled mid-run
             if doc.is_cancelled:

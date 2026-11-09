@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   GraduationCap,
-  Sparkles,
+  BookOpen,
   Clock,
   Shuffle,
   MinusCircle,
@@ -55,7 +55,6 @@ export const TestSetupPage: React.FC = () => {
         setQuestions(questionsData);
         if (questionsData.length > 0) {
           setCustomQuestionCount(Math.min(10, questionsData.length));
-          // Suggested default timer: ~1.5 min per question
           setTimeLimitMinutes(Math.max(5, Math.round(questionsData.length * 1.5)));
         }
       } catch (err: unknown) {
@@ -96,8 +95,8 @@ export const TestSetupPage: React.FC = () => {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-500 mx-auto mb-4" />
-        <p className="text-slate-400">Configuring exam environment...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-orange-500 mx-auto mb-4" />
+        <p className="text-slate-400 font-medium">Configuring examination environment...</p>
       </div>
     );
   }
@@ -116,88 +115,88 @@ export const TestSetupPage: React.FC = () => {
 
       {/* Header */}
       <div className="mb-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-400/30 text-rose-500 dark:text-rose-300 text-xs font-black uppercase tracking-wider mb-3 shadow-sm">
-          <GraduationCap className="w-4 h-4" /> Quiz Setup &amp; Preferences 🍵
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <GraduationCap className="w-4 h-4" /> Test Session Configuration
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight font-heading">
-          Configure Your Practice Test
+        <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          Configure Your Examination
         </h1>
         <p className="mt-1 text-sm text-slate-400 font-medium">
-          Document: <strong className="text-white px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700/60 ml-0.5 mr-0.5">{doc?.filename}</strong> ({totalAvailable} total questions available)
+          Document: <strong className="text-slate-200 px-2 py-0.5 rounded bg-slate-800 border border-slate-700 ml-0.5 mr-0.5">{doc?.filename}</strong> ({totalAvailable} questions available)
         </p>
       </div>
 
       {/* Security Banner */}
-      <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-400/25 text-rose-600 dark:text-rose-200 text-xs flex items-center gap-3 mb-8 shadow-sm">
-        <ShieldCheck className="w-5 h-5 text-rose-400 flex-shrink-0" />
+      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs flex items-center gap-3 mb-8">
+        <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0" />
         <span>
-          <strong>Zero Leakage:</strong> Correct answers are strictly isolated and never transmitted until you choose to submit. Practice peacefully without spoilers! 🧸
+          <strong className="text-white">Isolated Key Security:</strong> Answer verification is isolated server-side. Full results and analytics are generated upon completion.
         </span>
       </div>
 
       <div className="space-y-6">
         {/* Step 1: Mode Selection */}
         <div>
-          <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-3 font-heading">
-            1. Select Test Mode
+          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+            1. Select Session Mode
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Exam Mode Card */}
             <div
               onClick={() => setMode('exam')}
-              className={`p-6 rounded-3xl border-2 cursor-pointer transition-all duration-200 shadow-cozy hover:scale-[1.01] ${
+              className={`p-6 rounded-2xl border cursor-pointer transition-all duration-150 ${
                 mode === 'exam'
-                  ? 'border-rose-400 bg-rose-500/10 ring-2 ring-rose-400/25'
-                  : 'border-slate-800 bg-slate-900 hover:border-rose-400/40'
+                  ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/30'
+                  : 'border-slate-800 bg-[#161B22] hover:border-slate-700'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-base font-bold text-white flex items-center gap-2 font-heading">
-                  <GraduationCap className="w-5 h-5 text-rose-400" />
-                  Exam Mode 🎯
+                <span className="text-base font-bold text-white flex items-center gap-2">
+                  <GraduationCap className="w-5 h-5 text-orange-400" />
+                  Examination Mode
                 </span>
-                {mode === 'exam' && <CheckCircle2 className="w-5 h-5 text-rose-400" />}
+                {mode === 'exam' && <CheckCircle2 className="w-5 h-5 text-orange-400" />}
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                Realistic exam simulation. No answers or hints are revealed during the test. Complete scorecard & detailed review presented upon submission.
+              <p className="text-xs text-slate-400 leading-relaxed font-normal">
+                Standard timed examination. Answers and explanations are concealed until the test is submitted for final grading.
               </p>
             </div>
 
             {/* Practice Mode Card */}
             <div
               onClick={() => setMode('practice')}
-              className={`p-6 rounded-3xl border-2 cursor-pointer transition-all duration-200 shadow-cozy hover:scale-[1.01] ${
+              className={`p-6 rounded-2xl border cursor-pointer transition-all duration-150 ${
                 mode === 'practice'
-                  ? 'border-rose-400 bg-rose-500/10 ring-2 ring-rose-400/25'
-                  : 'border-slate-800 bg-slate-900 hover:border-rose-400/40'
+                  ? 'border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/30'
+                  : 'border-slate-800 bg-[#161B22] hover:border-slate-700'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-base font-bold text-white flex items-center gap-2 font-heading">
-                  <Sparkles className="w-5 h-5 text-rose-400" />
-                  Practice Mode 🍵
+                <span className="text-base font-bold text-white flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-emerald-400" />
+                  Practice Mode
                 </span>
-                {mode === 'practice' && <CheckCircle2 className="w-5 h-5 text-rose-400" />}
+                {mode === 'practice' && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                Gentle interactive mode. Receive immediate cheerful feedback and explanations for each question as you practice.
+              <p className="text-xs text-slate-400 leading-relaxed font-normal">
+                Self-paced practice. Verify answers on each question instantly and inspect explanations and references.
               </p>
             </div>
           </div>
         </div>
 
         {/* Step 2: Number of Questions */}
-        <div className="p-6 rounded-3xl bg-slate-900 border-2 border-slate-800 shadow-cozy">
-          <label className="block text-xs font-black text-slate-300 uppercase tracking-wider mb-3 font-heading">
-            2. Question Count
+        <div className="p-6 rounded-2xl bg-[#161B22] border border-slate-800">
+          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+            2. Question Set Size
           </label>
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => setQuestionCountType('all')}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-cozy-pill cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 questionCountType === 'all'
-                  ? 'bg-rose-500 text-white shadow-sm'
+                  ? 'bg-orange-600 text-white shadow-sm'
                   : 'bg-slate-800 text-slate-300 hover:text-white'
               }`}
             >
@@ -206,9 +205,9 @@ export const TestSetupPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setQuestionCountType('custom')}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all shadow-cozy-pill cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 questionCountType === 'custom'
-                  ? 'bg-rose-500 text-white shadow-sm'
+                  ? 'bg-orange-600 text-white shadow-sm'
                   : 'bg-slate-800 text-slate-300 hover:text-white'
               }`}
             >
@@ -227,22 +226,22 @@ export const TestSetupPage: React.FC = () => {
                       Math.max(1, Math.min(totalAvailable, parseInt(e.target.value) || 1))
                     )
                   }
-                  className="w-20 px-3 py-1.5 bg-slate-950 border-2 border-slate-700 rounded-xl text-white text-xs font-bold text-center focus:outline-none focus:border-rose-400"
+                  className="w-20 px-3 py-1.5 bg-[#0E1117] border border-slate-700 rounded-lg text-white text-xs font-bold text-center focus:outline-none focus:border-orange-500"
                 />
-                <span className="text-xs text-slate-400 font-semibold">questions</span>
+                <span className="text-xs text-slate-400 font-medium">questions</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Step 3: Timer Options */}
-        <div className="p-6 rounded-3xl bg-slate-900 border-2 border-slate-800 shadow-cozy space-y-4">
+        <div className="p-6 rounded-2xl bg-[#161B22] border border-slate-800 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-rose-400" />
+              <Clock className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white font-heading">Gentle Timer</span>
-                <p className="text-xs text-slate-400">Countdown timer with automatic submit on expiry</p>
+                <span className="text-sm font-bold text-white">Timer</span>
+                <p className="text-xs text-slate-400">Time-limited session with automatic submission on expiration</p>
               </div>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -252,20 +251,20 @@ export const TestSetupPage: React.FC = () => {
                 onChange={(e) => setTimerEnabled(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
             </label>
           </div>
 
           {timerEnabled && (
-            <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center gap-2.5">
+            <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center gap-2.5">
               {[15, 30, 45, 60].map((mins) => (
                 <button
                   key={mins}
                   type="button"
                   onClick={() => setTimeLimitMinutes(mins)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer shadow-cozy-pill ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                     timeLimitMinutes === mins
-                      ? 'bg-rose-500 text-white shadow-sm'
+                      ? 'bg-orange-600 text-white'
                       : 'bg-slate-800 text-slate-300 hover:text-white'
                   }`}
                 >
@@ -279,37 +278,37 @@ export const TestSetupPage: React.FC = () => {
                   max={300}
                   value={timeLimitMinutes}
                   onChange={(e) => setTimeLimitMinutes(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 px-2.5 py-1 bg-slate-950 border-2 border-slate-700 rounded-xl text-white text-xs font-bold text-center focus:outline-none focus:border-rose-400"
+                  className="w-16 px-2.5 py-1 bg-[#0E1117] border border-slate-700 rounded-lg text-white text-xs font-bold text-center focus:outline-none focus:border-orange-500"
                 />
-                <span className="text-xs text-slate-400 font-semibold">custom mins</span>
+                <span className="text-xs text-slate-400 font-medium">custom mins</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* Step 4: Randomization & Negative Marking */}
-        <div className="p-6 rounded-3xl bg-slate-900 border-2 border-slate-800 shadow-cozy space-y-4">
+        {/* Step 4: Randomization & Marking */}
+        <div className="p-6 rounded-2xl bg-[#161B22] border border-slate-800 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Shuffle className="w-5 h-5 text-rose-400" />
+              <Shuffle className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white font-heading">Shuffle Questions</span>
-                <p className="text-xs text-slate-400">Randomize question presentation order</p>
+                <span className="text-sm font-bold text-white">Shuffle Questions</span>
+                <p className="text-xs text-slate-400">Randomize question order for each session</p>
               </div>
             </div>
             <input
               type="checkbox"
               checked={shuffleQuestions}
               onChange={(e) => setShuffleQuestions(e.target.checked)}
-              className="w-5 h-5 rounded-lg border-slate-700 text-rose-500 focus:ring-rose-400 cursor-pointer accent-rose-500"
+              className="w-5 h-5 rounded border-slate-700 text-orange-600 focus:ring-orange-500 cursor-pointer accent-orange-600"
             />
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
+          <div className="flex items-center justify-between pt-3 border-t border-slate-800">
             <div className="flex items-center gap-3">
-              <Layers className="w-5 h-5 text-rose-400" />
+              <Layers className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white font-heading">Shuffle Options</span>
+                <span className="text-sm font-bold text-white">Shuffle Options</span>
                 <p className="text-xs text-slate-400">Randomize option order (A/B/C/D) per question</p>
               </div>
             </div>
@@ -317,15 +316,15 @@ export const TestSetupPage: React.FC = () => {
               type="checkbox"
               checked={shuffleOptions}
               onChange={(e) => setShuffleOptions(e.target.checked)}
-              className="w-5 h-5 rounded-lg border-slate-700 text-rose-500 focus:ring-rose-400 cursor-pointer accent-rose-500"
+              className="w-5 h-5 rounded border-slate-700 text-orange-600 focus:ring-orange-500 cursor-pointer accent-orange-600"
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800">
             <div className="flex items-center gap-3">
               <MinusCircle className="w-5 h-5 text-amber-400" />
               <div>
-                <span className="text-sm font-bold text-white font-heading">Negative Marking Penalty</span>
+                <span className="text-sm font-bold text-white">Negative Marking Penalty</span>
                 <p className="text-xs text-slate-400">Deduct marks for incorrect answers</p>
               </div>
             </div>
@@ -335,9 +334,9 @@ export const TestSetupPage: React.FC = () => {
                   key={penalty}
                   type="button"
                   onClick={() => setNegativeMarking(penalty)}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer shadow-cozy-pill ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
                     negativeMarking === penalty
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                      ? 'bg-amber-500 text-slate-950 font-bold'
                       : 'bg-slate-800 text-slate-400 hover:text-white'
                   }`}
                 >
@@ -348,29 +347,29 @@ export const TestSetupPage: React.FC = () => {
           </div>
 
           {/* Partial Credit */}
-          <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
+          <div className="flex items-center justify-between pt-3 border-t border-slate-800">
             <div className="flex items-center gap-3">
               <CheckCheck className="w-5 h-5 text-emerald-400" />
               <div>
-                <span className="text-sm font-bold text-white font-heading">Partial Credit (Multi-choice)</span>
-                <p className="text-xs text-slate-400">Award proportional score for partially correct selections</p>
+                <span className="text-sm font-bold text-white">Partial Credit</span>
+                <p className="text-xs text-slate-400">Award partial credit for multi-select questions</p>
               </div>
             </div>
             <input
               type="checkbox"
               checked={partialCredit}
               onChange={(e) => setPartialCredit(e.target.checked)}
-              className="w-5 h-5 rounded-lg border-slate-700 text-rose-500 focus:ring-rose-400 cursor-pointer accent-rose-500"
+              className="w-5 h-5 rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 cursor-pointer accent-emerald-600"
             />
           </div>
 
           {/* Target Passing Score */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800/80">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-800">
             <div className="flex items-center gap-3">
-              <Target className="w-5 h-5 text-rose-400" />
+              <Target className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white font-heading">Target Passing Score</span>
-                <p className="text-xs text-slate-400">Display Pass/Fail badge on results</p>
+                <span className="text-sm font-bold text-white">Target Score Threshold</span>
+                <p className="text-xs text-slate-400">Benchmark score percentage on performance report</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -378,7 +377,7 @@ export const TestSetupPage: React.FC = () => {
                 type="checkbox"
                 checked={targetScoreEnabled}
                 onChange={(e) => setTargetScoreEnabled(e.target.checked)}
-                className="w-5 h-5 rounded-lg border-slate-700 text-rose-500 focus:ring-rose-400 cursor-pointer mr-2 accent-rose-500"
+                className="w-5 h-5 rounded border-slate-700 text-orange-600 focus:ring-orange-500 cursor-pointer mr-2 accent-orange-600"
               />
               {targetScoreEnabled && (
                 <div className="flex items-center gap-1.5">
@@ -387,9 +386,9 @@ export const TestSetupPage: React.FC = () => {
                       key={pct}
                       type="button"
                       onClick={() => setTargetScorePercentage(pct)}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer shadow-cozy-pill ${
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
                         targetScorePercentage === pct
-                          ? 'bg-rose-500 text-white shadow-sm'
+                          ? 'bg-orange-600 text-white'
                           : 'bg-slate-800 text-slate-400 hover:text-white'
                       }`}
                     >
@@ -402,7 +401,7 @@ export const TestSetupPage: React.FC = () => {
                     max={100}
                     value={targetScorePercentage}
                     onChange={(e) => setTargetScorePercentage(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                    className="w-14 px-2 py-1 bg-slate-950 border-2 border-slate-700 rounded-xl text-white text-xs text-center font-bold"
+                    className="w-14 px-2 py-1 bg-[#0E1117] border border-slate-700 rounded-lg text-white text-xs text-center font-bold"
                   />
                   <span className="text-xs text-slate-400 font-bold">%</span>
                 </div>
@@ -413,7 +412,7 @@ export const TestSetupPage: React.FC = () => {
 
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-800/50 text-red-300 text-xs shadow-cozy">
+          <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/50 text-red-300 text-xs">
             {error}
           </div>
         )}
@@ -422,16 +421,16 @@ export const TestSetupPage: React.FC = () => {
         <button
           onClick={handleStartTest}
           disabled={starting || totalAvailable === 0}
-          className="w-full py-4 px-6 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-base shadow-sm transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer active:scale-98"
+          className="w-full py-3.5 px-6 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer shadow-sm"
         >
           {starting ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Preparing Your Quiz Cozy Nook...</span>
+              <span>Preparing Examination Session...</span>
             </>
           ) : (
             <>
-              <span>Begin {mode === 'exam' ? 'Exam' : 'Practice Session'} ✨</span>
+              <span>Begin {mode === 'exam' ? 'Examination' : 'Practice Session'}</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}

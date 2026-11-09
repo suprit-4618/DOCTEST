@@ -1,81 +1,76 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sparkles, BookOpen, Moon, Sun } from 'lucide-react';
+import { BookOpen, Moon, Sun, UploadCloud, Library } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const location = useLocation();
-  const [theme, setTheme] = useState<'cream' | 'cocoa'>(() => {
-    return (localStorage.getItem('cozy-theme') as 'cream' | 'cocoa') || 'cream';
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('app-theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+    return 'dark';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('cozy-theme', theme);
+    localStorage.setItem('app-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'cream' ? 'cocoa' : 'cream'));
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   return (
-    <header className="border-b-2 border-slate-800 bg-slate-900 sticky top-0 z-50 transition-colors shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Brand / Logo */}
         <Link to="/" className="flex items-center space-x-2.5 group">
-          <div className="w-9 h-9 rounded-2xl bg-rose-500 flex items-center justify-center shadow-sm text-white group-hover:bg-rose-600 transition duration-150">
-            <BookOpen className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center text-white shadow-sm group-hover:bg-orange-500 transition">
+            <BookOpen className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h1 className="text-base sm:text-lg font-bold text-slate-100 tracking-tight font-heading">
-              DOCTEST
-            </h1>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base font-extrabold text-slate-100 tracking-tight font-heading">
+              DocTest
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+              Exam Engine
+            </span>
           </div>
         </Link>
 
-        {/* Navigation & Cute Theme Toggle */}
+        {/* Navigation & Theme Toggle */}
         <nav className="flex items-center space-x-2 sm:space-x-3">
           {/* Theme Switcher */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-850 text-slate-400 hover:text-slate-100 border border-slate-800 text-xs font-semibold cursor-pointer shadow-sm hover:border-slate-700 transition"
-            title={`Switch to ${theme === 'cream' ? 'Cozy Cocoa (Night Cafe)' : 'Milk Tea (Warm Cream)'} theme`}
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-850 text-slate-400 hover:text-slate-100 border border-slate-800 hover:border-slate-700 transition cursor-pointer"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
           >
-            {theme === 'cream' ? (
-              <>
-                <Moon className="w-3.5 h-3.5 text-amber-500" />
-                <span className="hidden sm:inline">Cocoa 🍫</span>
-              </>
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-orange-400" />
             ) : (
-              <>
-                <Sun className="w-3.5 h-3.5 text-rose-400" />
-                <span className="hidden sm:inline">Milk Tea 🍵</span>
-              </>
+              <Moon className="w-4 h-4 text-slate-600" />
             )}
           </button>
 
           <Link
             to="/library"
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
               location.pathname === '/library'
-                ? 'bg-slate-850 text-slate-100 border border-slate-750 shadow-sm'
-                : 'text-slate-400 hover:text-slate-100'
+                ? 'bg-slate-800 text-slate-100 border-slate-700'
+                : 'text-slate-400 hover:text-slate-100 border-transparent hover:border-slate-800'
             }`}
           >
-            <BookOpen className="w-3.5 h-3.5 text-rose-500" />
+            <Library className="w-3.5 h-3.5 text-emerald-500" />
             <span>Library</span>
           </Link>
 
           <Link
             to="/upload"
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-sm transition active:scale-95 ${
-              location.pathname.startsWith('/upload')
-                ? 'bg-rose-600 ring-2 ring-rose-400/30'
-                : 'bg-rose-500 hover:bg-rose-600'
-            }`}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-orange-600 hover:bg-orange-500 text-white shadow-sm transition"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Upload Test</span>
+            <UploadCloud className="w-3.5 h-3.5" />
+            <span>Upload Document</span>
           </Link>
         </nav>
       </div>

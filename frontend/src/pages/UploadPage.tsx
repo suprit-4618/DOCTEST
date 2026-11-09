@@ -9,7 +9,6 @@ import {
   CheckCircle2, 
   ArrowRight, 
   Clipboard, 
-  Sparkles,
   Loader2
 } from 'lucide-react';
 import { uploadDocument } from '../api/documents';
@@ -136,26 +135,26 @@ D) object`;
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
       {/* Title */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-bold tracking-wide mb-3 shadow-sm">
-          <Sparkles className="w-3.5 h-3.5" /> Cozy Practice Prep ✨
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <FileText className="w-3.5 h-3.5 text-emerald-500" /> Document Ingestion
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight font-heading">
-          Upload Your Practice Exam 📖
+          Upload Examination Document
         </h1>
         <p className="mt-2 text-slate-400 text-sm max-w-xl mx-auto">
-          Drop any PDF, handwritten screenshot, or Word document. We will gently mask existing markings so you can test yourself in peace.
+          Upload any PDF exam paper, photo scan, or Word file. Questions will be extracted cleanly with printed answer keys masked for distraction-free testing.
         </p>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-cozy">
-        {/* Pill-shaped Cute Tabs */}
-        <div className="flex p-1 rounded-2xl bg-slate-850 border border-slate-800 mb-6 max-w-md mx-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
+        {/* Tab Selection */}
+        <div className="flex p-1 rounded-xl bg-slate-850 border border-slate-800 mb-6 max-w-md mx-auto">
           <button
             type="button"
             onClick={() => { setActiveTab('file'); setError(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-xs transition cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-xs transition cursor-pointer ${
               activeTab === 'file'
-                ? 'bg-rose-500 text-white shadow-sm'
+                ? 'bg-orange-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -165,9 +164,9 @@ D) object`;
           <button
             type="button"
             onClick={() => { setActiveTab('text'); setError(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-xs transition cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-xs transition cursor-pointer ${
               activeTab === 'text'
-                ? 'bg-rose-500 text-white shadow-sm'
+                ? 'bg-orange-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -180,14 +179,14 @@ D) object`;
           {/* Document Title Input */}
           <div>
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 font-heading">
-              Document / Test Title (Optional)
+              Document / Exam Title (Optional)
             </label>
             <input
               type="text"
               value={docTitle}
               onChange={(e) => setDocTitle(e.target.value)}
-              placeholder="e.g., Email Specialist Practice Quiz, Marketing Cloud Midterm"
-              className="w-full px-4 py-3 bg-slate-850 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition shadow-inner"
+              placeholder="e.g., CDS English Examination 2026, Civil Services Paper I"
+              className="w-full px-4 py-2.5 bg-slate-850 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition"
             />
           </div>
 
@@ -207,49 +206,49 @@ D) object`;
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-3xl p-8 sm:p-10 text-center cursor-pointer transition-all duration-200 ${
+                className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 text-center cursor-pointer transition-all duration-150 ${
                   isDragging
-                    ? 'border-rose-400 bg-rose-500/10 scale-[1.01]'
+                    ? 'border-orange-500 bg-orange-500/10'
                     : selectedFile
                     ? 'border-emerald-500/40 bg-emerald-500/5'
-                    : 'border-slate-800 bg-slate-850/50 hover:border-rose-400/50 hover:bg-slate-850'
+                    : 'border-slate-800 bg-slate-850/40 hover:border-orange-500/50 hover:bg-slate-850'
                 }`}
               >
                 {selectedFile ? (
                   <div className="flex flex-col items-center justify-center space-y-3">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shadow-sm">
-                      <CheckCircle2 className="w-7 h-7" />
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 flex items-center justify-center shadow-sm">
+                      <CheckCircle2 className="w-6 h-6" />
                     </div>
                     <div>
                       <p className="text-base font-bold text-slate-100 font-heading">{selectedFile.name}</p>
                       <p className="text-xs text-slate-400 mt-1">
-                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB &bull; Tap or drop another to replace
+                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB &bull; Click to replace
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center space-y-3">
-                    <div className="w-16 h-16 rounded-3xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center shadow-sm">
-                      <UploadCloud className="w-8 h-8" />
+                    <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 flex items-center justify-center shadow-sm">
+                      <UploadCloud className="w-6 h-6" />
                     </div>
                     <div>
                       <p className="text-sm sm:text-base font-bold text-slate-200 font-heading">
-                        Drop your notes or exam file here, or <span className="text-rose-500 underline underline-offset-2">browse files</span>
+                        Click to upload or drag and drop your document
                       </p>
                       <p className="text-xs text-slate-500 mt-1">
-                        Supports PDF, PNG, JPG, JPEG, WEBP, DOCX (Max {MAX_SIZE_MB}MB, up to 150 pages)
+                        PDF, PNG, JPG, JPEG, WEBP, DOCX (Max {MAX_SIZE_MB}MB, up to 150 pages)
                       </p>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                      <span className="inline-flex items-center gap-1 text-[11px] px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
-                        <FileTypeIcon className="w-3 h-3 text-rose-400" /> PDF
+                      <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
+                        <FileTypeIcon className="w-3 h-3 text-orange-400" /> PDF
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
-                        <ImageIcon className="w-3 h-3 text-emerald-400" /> Images / Screenshots
+                      <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
+                        <ImageIcon className="w-3 h-3 text-emerald-400" /> Scans & Photos
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
-                        <FileText className="w-3 h-3 text-amber-400" /> DOCX
+                      <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
+                        <FileText className="w-3 h-3 text-slate-300" /> Word DOCX
                       </span>
                     </div>
                   </div>
@@ -268,9 +267,9 @@ D) object`;
                 <button
                   type="button"
                   onClick={handlePasteSampleText}
-                  className="text-xs text-rose-500 hover:text-rose-400 transition font-semibold cursor-pointer"
+                  className="text-xs text-orange-400 hover:text-orange-300 transition font-semibold cursor-pointer"
                 >
-                  Insert Sample Questions 📝
+                  Insert Sample Questions
                 </button>
               </div>
               <textarea
@@ -278,18 +277,18 @@ D) object`;
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
                 placeholder="Paste your questions here... (e.g. 1. What is...? A) ... B) ...)"
-                className="w-full px-4 py-3 bg-slate-850 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-500 text-sm font-mono focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 transition leading-relaxed shadow-inner"
+                className="w-full px-4 py-3 bg-slate-850 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm font-mono focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition leading-relaxed"
               />
             </div>
           )}
 
           {/* Error Alert */}
           {error && (
-            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-start gap-3 text-sm">
-              <AlertCircle className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-start gap-3 text-sm">
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-rose-300 font-heading">Validation Notice</p>
-                <p className="text-xs text-rose-300/90 mt-0.5">{error}</p>
+                <p className="font-bold text-red-300 text-xs">Validation Notice</p>
+                <p className="text-xs text-red-300/90 mt-0.5">{error}</p>
               </div>
             </div>
           )}
@@ -298,16 +297,16 @@ D) object`;
           <button
             type="submit"
             disabled={uploading}
-            className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-400 hover:to-pink-400 text-white font-bold text-sm shadow-cozy-pill transition duration-150 flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer transform hover:-translate-y-0.5 active:scale-[0.98]"
+            className="w-full py-3 px-6 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
           >
             {uploading ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Baking Questions & Initializing Cozy Exam... ☕</span>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Ingesting and Parsing Document...</span>
               </>
             ) : (
               <>
-                <span>Process Document & Begin Practice</span>
+                <span>Ingest Document & Begin Extraction</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

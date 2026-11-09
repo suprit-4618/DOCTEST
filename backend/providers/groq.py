@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import httpx
@@ -22,6 +23,68 @@ from services.prompts import (
 logger = logging.getLogger(__name__)
 
 
+def _clean_and_parse_json(content_str: str) -> Dict[str, Any]:
+    """
+    Robustly parses JSON from LLM completions, stripping markdown code blocks,
+    preamble, thinking commentary, and handling minor syntax anomalies.
+    """
+    if not content_str:
+        return {}
+
+    content_str = content_str.strip()
+
+    # 1. Direct JSON parse
+    try:
+        return json.loads(content_str)
+    except Exception:
+        pass
+
+    # 2. Strip standard markdown code fences
+    clean = content_str
+    if clean.startswith("```json"):
+        clean = clean[7:]
+    elif clean.startswith("```"):
+        clean = clean[3:]
+    if clean.endswith("```"):
+        clean = clean[:-3]
+    clean = clean.strip()
+    try:
+        return json.loads(clean)
+    except Exception:
+        pass
+
+    # 3. Locate outermost JSON object { ... }
+    first_brace = content_str.find("{")
+    last_brace = content_str.rfind("}")
+    if first_brace != -1 and last_brace > first_brace:
+        candidate = content_str[first_brace : last_brace + 1]
+        try:
+            return json.loads(candidate)
+        except Exception:
+            # Clean trailing commas before closing braces/brackets
+            fixed = re.sub(r",\s*([\]}])", r"\1", candidate)
+            try:
+                return json.loads(fixed)
+            except Exception:
+                pass
+
+    # 4. Locate outermost JSON array [ ... ] if root was an array
+    first_bracket = content_str.find("[")
+    last_bracket = content_str.rfind("]")
+    if first_bracket != -1 and last_bracket > first_bracket:
+        candidate = content_str[first_bracket : last_bracket + 1]
+        try:
+            return {"questions": json.loads(candidate)}
+        except Exception:
+            fixed = re.sub(r",\s*([\]}])", r"\1", candidate)
+            try:
+                return {"questions": json.loads(fixed)}
+            except Exception:
+                pass
+
+    raise ValueError(f"Failed to parse valid JSON from text: {content_str[:300]}")
+
+
 class GroqProvider(BaseLLMProvider):
     """
     High-performance Groq Cloud LLM Provider (Llama 3.3 70B / GPT-OSS / Qwen).
@@ -31,13 +94,15 @@ class GroqProvider(BaseLLMProvider):
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: Optional[str] = "openai/gpt-oss-120b",
+        model_name: Optional[str] = "qwen/qwen3.8-27b",
         pricing_per_million_input: float = 0.0,
         pricing_per_million_output: float = 0.0,
     ):
+        actual_key = api_key or settings.GROQ_API_KEY
+        actual_model = model_name or settings.GROQ_MODEL or "qwen/qwen3.8-27b"
         super().__init__(
-            api_key=api_key,
-            model_name=model_name or "openai/gpt-oss-120b",
+            api_key=actual_key,
+            model_name=actual_model,
             pricing_per_million_input=pricing_per_million_input,
             pricing_per_million_output=pricing_per_million_output,
         )
@@ -49,7 +114,7 @@ class GroqProvider(BaseLLMProvider):
         json_mode: bool = True,
         max_retries: int = 8,
     ) -> Dict[str, Any]:
-        """Calls Groq chat completion API with smart retry and rate-limit backoff."""
+        """Calls Groq chat completion API with smart retry, JSON recovery, and rate-limit backoff."""
         if not self.api_key:
             raise ValueError("GROQ_API_KEY is not configured.")
 
@@ -62,6 +127,7 @@ class GroqProvider(BaseLLMProvider):
             "model": self.model_name,
             "messages": messages,
             "temperature": 0.1,
+            "max_tokens": 1800,
         }
 
         if json_mode:
@@ -73,19 +139,25 @@ class GroqProvider(BaseLLMProvider):
                 try:
                     response = await client.post(self.endpoint, headers=headers, json=payload)
 
+                    if response.status_code == 413:
+                        logger.warning("Groq API returned 413 (token limit). Lowering max_tokens and retrying...")
+                        payload["max_tokens"] = min(payload.get("max_tokens", 2500), 1600)
+                        await asyncio.sleep(6.0)
+                        continue
+
                     if response.status_code in [429, 500, 502, 503, 504]:
                         wait_seconds = delay
                         retry_after = response.headers.get("retry-after")
                         reset_tokens = response.headers.get("x-ratelimit-reset-tokens")
                         if retry_after:
                             try:
-                                wait_seconds = max(wait_seconds, float(retry_after) + 0.5)
+                                wait_seconds = max(wait_seconds, float(retry_after) + 2.0)
                             except Exception:
                                 pass
                         elif reset_tokens:
                             try:
                                 clean_reset = reset_tokens.strip().rstrip("s")
-                                wait_seconds = max(wait_seconds, float(clean_reset) + 0.5)
+                                wait_seconds = max(wait_seconds, float(clean_reset) + 2.0)
                             except Exception:
                                 pass
 
@@ -98,10 +170,46 @@ class GroqProvider(BaseLLMProvider):
 
                     if not response.is_success:
                         error_detail = response.text
+                        err_obj: Dict[str, Any] = {}
+                        err_data: Dict[str, Any] = {}
                         try:
-                            error_detail = response.json().get("error", {}).get("message", error_detail)
+                            err_data = response.json()
+                            err_obj = err_data.get("error", {})
+                            error_detail = err_obj.get("message", error_detail)
                         except Exception:
                             pass
+
+                        # Detect Groq server-side JSON schema validation rejection
+                        is_json_validation_err = (
+                            response.status_code == 400
+                            and (
+                                "failed to generate json" in error_detail.lower()
+                                or "failed to validate json" in error_detail.lower()
+                                or err_obj.get("code") == "json_validate_failed"
+                            )
+                        )
+
+                        if is_json_validation_err:
+                            # 1. Attempt recovery from failed_generation payload if provided by Groq
+                            failed_gen = err_obj.get("failed_generation")
+                            if failed_gen:
+                                try:
+                                    logger.warning("Groq returned 400 json_validate_failed; attempting recovery from failed_generation payload...")
+                                    parsed = _clean_and_parse_json(failed_gen)
+                                    if parsed:
+                                        logger.info("Successfully recovered JSON from Groq failed_generation payload.")
+                                        return {
+                                            "choices": [{"message": {"role": "assistant", "content": json.dumps(parsed)}}],
+                                            "usage": err_data.get("usage", {}),
+                                        }
+                                except Exception as salvage_err:
+                                    logger.warning(f"Could not parse failed_generation: {salvage_err}")
+
+                            # 2. If json_mode was enabled, retry without json_object constraint to avoid Groq validation 400
+                            if json_mode:
+                                logger.warning("Retrying Groq API request without response_format json_object...")
+                                return await self._call_groq_api(messages, json_mode=False, max_retries=3)
+
                         raise RuntimeError(f"Groq API error ({response.status_code}): {error_detail}")
 
                     return response.json()
@@ -125,37 +233,56 @@ class GroqProvider(BaseLLMProvider):
         Parses OCR text or pasted text into structured questions and answer keys via Groq.
         """
         user_prompt = f"""
-You are an expert exam ingestion engine. Analyze the following OCR exam text and extract all multiple choice questions and answer keys into structured JSON.
+You are an expert exam ingestion engine. Analyze the following OCR exam text and extract ALL multiple choice questions and answer keys into structured JSON.
 
 CRITICAL EXTRACTION RULES:
 1. QUESTION NUMBERS:
-   - Identify the TRUE global question number from exam headers or stems (e.g., '21 of 65' -> 21, '53 of 65' -> 53, 'Question 14' -> 14, 'Q. 3' -> 3).
-   - Do NOT reset numbers to 1, 2, 3 in each batch unless the questions are genuinely numbered 1, 2, 3 in the document.
-2. SOURCE PAGE ATTRIBUTION:
-   - Each page is marked with '--- PAGE N ---'. You MUST set 'source_page' to that exact integer page number N for every question extracted from that page.
-3. ISOLATE OPTIONS PER QUESTION:
-   - Every question must contain ONLY the options printed directly beneath its question stem on its page. NEVER mix options across different pages or questions!
-   - Support variable option counts (2, 3, 4, 5, or 6 options). If only 3 options (A, B, C) are printed, extract exactly those 3 with sequential labels ('A', 'B', 'C'). Do NOT invent fake missing options.
-4. REPAIR OCR ERRORS IN TOKENS & OPTIONS:
-   - Fix obvious OCR character corruptions in tokens/variables, especially personalization strings where '%%' was misread as 'ss', 'sf', 'st', or 's4' (e.g. 'sssubscriberidss' -> '%%subscriberid%%', 'sfmenberidss' -> '%%memberid%%', 'stcontaotkeyes' -> '%%contactkey%%').
-5. CHECK FOR ANSWER MARKINGS & KEYS:
+   - Identify the TRUE global question number from headers or stems (e.g. '47.', '114.', 'Question 14').
+   - Keep the exact global question number from the exam.
+2. SOURCE PAGE:
+   - Each page is marked with '--- PAGE N ---'. Set 'source_page' to that exact integer page number N for every question on that page.
+3. NEVER LEAVE OPTIONS EMPTY (CRITICAL):
+   - EVERY option MUST contain meaningful, complete text. NEVER output an option with empty text "" or just whitespace.
+4. SPOTTING ERRORS / SENTENCE PARTS QUESTIONS:
+   - When a sentence is divided into underlined/marked parts (a), (b), (c) with (d) as 'No error':
+     * Option A MUST contain the text of part (a).
+     * Option B MUST contain the text of part (b).
+     * Option C MUST contain the text of part (c).
+     * Option D MUST contain 'No error' (or part (d)).
+     * Question text MUST be the full sentence.
+     * NEVER leave Options A, B, C empty!
+5. SENTENCE ORDERING / PARAJUMBLES (S1, P, Q, R, S, S6):
+   - Include the full context (S1, P, Q, R, S, S6 sentences) in the question stem.
+   - The options are the sequence choices (e.g. A: PQRS, B: RSPQ, C: QPSR, D: SRPQ).
+6. MATCHING LISTS (List I and List II):
+   - Include all List I and List II items in the question stem or context.
+   - The options are the code combinations (e.g. A: A-2, B-4, C-1, D-3).
+7. READING COMPREHENSION PASSAGES:
+   - If questions relate to a passage (e.g. 'PASSAGE I'), capture the passage text in 'context' or 'shared_passage'.
+8. CHECK FOR ANSWER MARKINGS & KEYS:
    - Check if an option has a tick, mark, asterisk, or '(correct)'. Include that label in 'correct_options' and set answer_source to 'marked_in_document'.
-   - If a dedicated Answer Key section (e.g. 'Answers 1.B 2.B 3.B...' or '1-B, 2-C') appears on any page, extract it in 'detected_answer_key_section'.
-6. Output STRICT JSON conforming to this schema:
+   - If a dedicated Answer Key section appears on any page, extract it in 'detected_answer_key_section'.
+9. CRITICAL FORMATTING:
+   - Return ONLY a raw JSON object.
+   - Do NOT wrap the JSON in markdown fences (like ```json ... ```).
+   - Start directly with {{ and end with }}.
+
+Output strictly conforming to this schema:
 {{
   "questions": [
     {{
-      "question_number": 21,
-      "question_text": "Clean question text here",
+      "question_number": 47,
+      "question_text": "Clean complete question text",
       "options": [
         {{"label": "A", "text": "First option text"}},
         {{"label": "B", "text": "Second option text"}},
-        {{"label": "C", "text": "Third option text"}}
+        {{"label": "C", "text": "Third option text"}},
+        {{"label": "D", "text": "Fourth option text"}}
       ],
-      "correct_options": ["A"],
-      "answer_source": "marked_in_document",
+      "correct_options": [],
+      "answer_source": "none",
       "confidence": 0.95,
-      "source_page": 47,
+      "source_page": 12,
       "explanation": null,
       "needs_review": false,
       "has_figure": false,
@@ -164,31 +291,20 @@ CRITICAL EXTRACTION RULES:
       "figure_image_url": null
     }}
   ],
-  "detected_answer_key_section": "1-B, 2-C..."
+  "detected_answer_key_section": null
 }}
 
 EXAM TEXT TO PARSE:
 {text_content}
 """
         messages = [
-            {"role": "system", "content": "You are a specialized exam parser. You always output valid, parseable JSON conforming strictly to the requested schema."},
+            {"role": "system", "content": "You are a specialized exam parser. You always output valid, parseable JSON conforming strictly to the requested schema. Return ONLY valid raw JSON starting with { and ending with } without markdown backticks."},
             {"role": "user", "content": user_prompt},
         ]
 
         raw = await self._call_groq_api(messages, json_mode=True)
         content_str = raw["choices"][0]["message"]["content"]
-
-        try:
-            parsed_data = json.loads(content_str)
-        except Exception:
-            clean = content_str.strip()
-            if clean.startswith("```json"):
-                clean = clean[7:]
-            if clean.startswith("```"):
-                clean = clean[3:]
-            if clean.endswith("```"):
-                clean = clean[:-3]
-            parsed_data = json.loads(clean.strip())
+        parsed_data = _clean_and_parse_json(content_str)
 
         usage = raw.get("usage", {})
         prompt_tokens = usage.get("prompt_tokens", 0)
@@ -208,6 +324,27 @@ EXAM TEXT TO PARSE:
                 q["correct_options"] = []
             if q.get("confidence") is None:
                 q["confidence"] = 0.95
+
+            # Guardrail: Never allow blank option texts
+            options = q.get("options", [])
+            for opt_idx, opt in enumerate(options):
+                if not opt.get("label"):
+                    opt["label"] = chr(65 + (opt_idx % 26))
+                opt_text = str(opt.get("text") or "").strip()
+                if not opt_text:
+                    q_text = str(q.get("question_text") or "")
+                    has_no_error = any("no error" in str(o.get("text", "")).lower() for o in options)
+                    if has_no_error:
+                        parts = [p.strip() for p in re.split(r"[/|•\n]|\([a-d]\)|\b[a-d]\)", q_text, flags=re.IGNORECASE) if p.strip()]
+                        if len(parts) >= len(options) - 1 and opt_idx < len(parts):
+                            opt["text"] = parts[opt_idx]
+                        else:
+                            opt["text"] = f"Part ({opt['label']})"
+                    else:
+                        opt["text"] = f"Option {opt['label']}"
+                else:
+                    opt["text"] = opt_text
+
             parsed_questions.append(ExtractedQuestionItem(**q))
 
         batch_result = ExtractionBatchResult(
@@ -250,7 +387,16 @@ EXAM TEXT TO PARSE:
             if not page_text or len(page_text) < 30:
                 page_text = ocr_image(img_bytes)
 
+            # Ignore blank / rough work pages
+            clean_check = page_text.strip().lower()
+            if len(clean_check) < 80 and ("space for rough work" in clean_check or "rough work" in clean_check):
+                logger.info(f"Page {p_num} is a rough work page. Skipping LLM call.")
+                continue
+
             combined_text_lines.append(f"--- PAGE {p_num} ---\n{page_text}")
+
+        if not combined_text_lines:
+            return ExtractionBatchResult()
 
         return await self.extract_questions_from_text("\n\n".join(combined_text_lines), context=context)
 
@@ -269,7 +415,7 @@ EXAM TEXT TO PARSE:
 
         raw = await self._call_groq_api(messages, json_mode=True)
         content_str = raw["choices"][0]["message"]["content"]
-        data = json.loads(content_str)
+        data = _clean_and_parse_json(content_str)
 
         suggestions = [
             AnswerSuggestionItem(

@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     # AI / LLM Configuration
     DEFAULT_LLM_PROVIDER: str = "groq"
     GROQ_API_KEY: Optional[str] = None
-    GROQ_MODEL: str = "openai/gpt-oss-120b"
+    GROQ_MODEL: str = "qwen/qwen3.8-27b"
     GEMINI_API_KEY: Optional[str] = None
     GEMINI_MODEL: str = "gemini-3-flash-preview"
     OPENAI_API_KEY: Optional[str] = None
@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     APP_PASSWORD: Optional[str] = None
 
     model_config = SettingsConfigDict(
-        env_file=(".env", "../.env"),
+        env_file=("backend/.env", ".env", "../.env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )

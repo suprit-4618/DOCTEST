@@ -610,8 +610,13 @@ async def process_document_background(
         logger.error(f"Background extraction failed for document {document_id}: {e}", exc_info=True)
         doc = db.query(DocumentDB).filter(DocumentDB.id == document_id).first()
         if doc and not doc.is_cancelled:
-            doc.status = DocumentStatus.FAILED.value
-            doc.error_message = f"Extraction error: {str(e)}"
+            q_count = db.query(QuestionDB).filter(QuestionDB.document_id == document_id).count()
+            if q_count > 0:
+                doc.status = DocumentStatus.EXTRACTED.value
+                doc.error_message = f"Partially extracted {q_count} questions. ({str(e)})"
+            else:
+                doc.status = DocumentStatus.FAILED.value
+                doc.error_message = f"Extraction error: {str(e)}"
             db.commit()
     finally:
         db.close()
