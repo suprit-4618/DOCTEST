@@ -210,7 +210,7 @@ export const LibraryPage: React.FC = () => {
 
   const getScoreBadge = (score: number | null | undefined) => {
     if (score === null || score === undefined) {
-      return <span className="text-slate-400 text-xs font-medium px-2 py-0.5 rounded bg-slate-800 border border-slate-700">Not tested</span>;
+      return <span className="text-slate-400 text-xs font-medium px-2 py-0.5 rounded bg-slate-850 border border-slate-750">Not tested</span>;
     }
     let colorClass = 'bg-orange-500/15 text-orange-400 border-orange-500/30';
     if (score >= 80) {
@@ -220,7 +220,7 @@ export const LibraryPage: React.FC = () => {
     }
 
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded border text-xs font-bold ${colorClass}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded border text-xs font-bold font-mono ${colorClass}`}>
         <span>{score}%</span>
       </span>
     );
@@ -231,10 +231,10 @@ export const LibraryPage: React.FC = () => {
       {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-2 font-mono">
             Document Repository &amp; Archive
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight font-heading">
             Document Library
           </h1>
           <p className="text-sm text-slate-400 mt-1 max-w-xl">
@@ -253,7 +253,7 @@ export const LibraryPage: React.FC = () => {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
-            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-slate-750 transition flex items-center gap-2 cursor-pointer"
             title="Import pre-extracted question set JSON"
           >
             {importing ? <Loader2 className="w-4 h-4 animate-spin text-orange-400" /> : <FileDown className="w-4 h-4 text-orange-400" />}
@@ -271,7 +271,7 @@ export const LibraryPage: React.FC = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="flex items-center justify-between gap-4 p-3 rounded-xl bg-[#161B22] border border-slate-800 mb-6">
+      <div className="flex items-center justify-between gap-4 p-3 rounded-xl bg-slate-900 border border-slate-800 mb-6 transition-colors">
         <div className="relative flex-grow max-w-md">
           <Search className="w-4 h-4 text-orange-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -279,12 +279,12 @@ export const LibraryPage: React.FC = () => {
             placeholder="Search documents by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-[#0E1117] border border-slate-800 rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-orange-500 transition"
+            className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-orange-500 transition-colors"
           />
         </div>
 
         <div className="text-xs text-slate-400 font-medium pr-2">
-          Total: <strong className="text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 ml-1">{filteredDocs.length}</strong> test{filteredDocs.length !== 1 ? 's' : ''}
+          Total: <strong className="text-slate-100 px-2 py-0.5 rounded bg-slate-850 border border-slate-750 ml-1 font-mono">{filteredDocs.length}</strong> test{filteredDocs.length !== 1 ? 's' : ''}
         </div>
       </div>
 
@@ -295,22 +295,22 @@ export const LibraryPage: React.FC = () => {
           <p className="text-slate-400 text-sm font-medium">Loading documents...</p>
         </div>
       ) : error ? (
-        <div className="p-6 rounded-2xl bg-red-950/30 border border-red-800/50 text-red-300 text-center">
+        <div className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-300 text-center">
           <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
           <p className="text-sm font-medium">{error}</p>
           <button
             onClick={loadDocuments}
-            className="mt-4 px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-700 transition"
+            className="mt-4 px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold hover:bg-slate-750 transition"
           >
             Try Again
           </button>
         </div>
       ) : filteredDocs.length === 0 ? (
-        <div className="p-12 rounded-2xl bg-[#161B22] border border-dashed border-slate-800 text-center space-y-4">
+        <div className="p-12 rounded-2xl bg-slate-900 border border-dashed border-slate-800 text-center space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-orange-500/10 text-orange-400 flex items-center justify-center mx-auto">
             <UploadCloud className="w-7 h-7" />
           </div>
-          <h3 className="text-lg font-bold text-white">No Documents in Library</h3>
+          <h3 className="text-lg font-bold text-slate-100 font-heading">No Documents in Library</h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
             {searchQuery
               ? 'No documents matched your search filter.'
@@ -337,7 +337,7 @@ export const LibraryPage: React.FC = () => {
             return (
               <div
                 key={doc.id}
-                className="p-5 sm:p-6 rounded-2xl bg-[#161B22] border border-slate-800 hover:border-slate-700 transition flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                className="p-5 sm:p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-750 transition flex flex-col md:flex-row md:items-center justify-between gap-4 group shadow-sm"
               >
                 {/* Left Document Info */}
                 <div className="flex items-start gap-4 flex-grow min-w-0">
@@ -353,7 +353,7 @@ export const LibraryPage: React.FC = () => {
                           type="text"
                           value={editFilename}
                           onChange={(e) => setEditFilename(e.target.value)}
-                          className="px-3 py-1.5 bg-[#0E1117] border border-orange-500 rounded-lg text-sm text-white font-semibold focus:outline-none flex-grow"
+                          className="px-3 py-1.5 bg-slate-950 border border-orange-500 rounded-lg text-sm text-slate-100 font-semibold focus:outline-none flex-grow"
                           autoFocus
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSaveRename(doc.id);
@@ -378,7 +378,7 @@ export const LibraryPage: React.FC = () => {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <h2 className="text-base sm:text-lg font-bold text-white truncate max-w-md group-hover:text-orange-400 transition-colors">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-100 truncate max-w-md group-hover:text-orange-400 transition-colors font-heading">
                           {doc.filename}
                         </h2>
                         <button
@@ -403,7 +403,7 @@ export const LibraryPage: React.FC = () => {
                         {doc.question_count || 0} Questions
                       </span>
                       <span>&bull;</span>
-                      <span className="uppercase text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
+                      <span className="uppercase text-[10px] font-bold px-2 py-0.5 rounded bg-slate-850 border border-slate-750 text-slate-300 font-mono">
                         {doc.file_type}
                       </span>
                     </div>
@@ -411,7 +411,7 @@ export const LibraryPage: React.FC = () => {
                 </div>
 
                 {/* Performance Stats Cards */}
-                <div className="flex items-center gap-3 sm:gap-4 bg-[#0E1117] p-2.5 rounded-xl border border-slate-800 flex-shrink-0">
+                <div className="flex items-center gap-3 sm:gap-4 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex-shrink-0">
                   <div className="text-center px-2">
                     <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Best Score</div>
                     <div className="mt-1">{getScoreBadge(doc.best_score)}</div>
@@ -428,7 +428,7 @@ export const LibraryPage: React.FC = () => {
 
                   <div className="text-center px-2">
                     <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Attempts</div>
-                    <div className="text-xs font-bold text-slate-200 mt-1">
+                    <div className="text-xs font-bold text-slate-200 mt-1 font-mono">
                       {doc.attempt_count}
                     </div>
                   </div>
@@ -440,7 +440,7 @@ export const LibraryPage: React.FC = () => {
                   <button
                     onClick={() => handleOpenHistory(doc)}
                     disabled={doc.attempt_count === 0}
-                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    className="p-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer border border-slate-750"
                     title="View Attempt History"
                   >
                     <History className="w-4 h-4 text-orange-400" />
@@ -450,7 +450,7 @@ export const LibraryPage: React.FC = () => {
                   <button
                     onClick={() => handleOpenWeak(doc)}
                     disabled={doc.attempt_count === 0}
-                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    className="p-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-white transition disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer border border-slate-750"
                     title="View Most Missed Questions"
                   >
                     <TrendingUp className="w-4 h-4 text-amber-400" />
@@ -459,7 +459,7 @@ export const LibraryPage: React.FC = () => {
                   {/* Export Options */}
                   <button
                     onClick={() => setExportDoc(doc)}
-                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
+                    className="p-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer border border-slate-750"
                     title="Export as JSON or PDF"
                   >
                     <Download className="w-4 h-4 text-emerald-400" />
@@ -468,7 +468,7 @@ export const LibraryPage: React.FC = () => {
                   {/* Review / Edit Questions */}
                   <Link
                     to={`/documents/${doc.id}/review`}
-                    className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+                    className="p-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 hover:text-white transition border border-slate-750"
                     title="Review & Edit Question Bank"
                   >
                     <Eye className="w-4 h-4 text-slate-300" />
@@ -477,7 +477,7 @@ export const LibraryPage: React.FC = () => {
                   {/* Delete */}
                   <button
                     onClick={() => setDeletingDoc(doc)}
-                    className="p-2 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition cursor-pointer"
+                    className="p-2 rounded-lg bg-slate-850 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition cursor-pointer border border-slate-750"
                     title="Delete Document"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -486,7 +486,7 @@ export const LibraryPage: React.FC = () => {
                   {/* Start Test */}
                   <Link
                     to={`/documents/${doc.id}/setup`}
-                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center gap-1.5 ml-1 cursor-pointer"
+                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center gap-1.5 ml-1 cursor-pointer shadow-sm"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                     <span>Take Test</span>
@@ -501,14 +501,14 @@ export const LibraryPage: React.FC = () => {
       {/* MODAL 1: Attempt History */}
       {historyDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center">
                   <History className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Attempt History</h3>
+                  <h3 className="text-base font-bold text-slate-100 font-heading">Attempt History</h3>
                   <p className="text-xs text-slate-400">{historyDoc.filename}</p>
                 </div>
               </div>
@@ -529,14 +529,14 @@ export const LibraryPage: React.FC = () => {
                 {attempts.map((att, i) => (
                   <div
                     key={att.session_id}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#0E1117] border border-slate-800 text-xs"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-md bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-[10px]">
+                      <span className="w-6 h-6 rounded-md bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-[10px] font-mono">
                         #{attempts.length - i}
                       </span>
                       <div>
-                        <div className="font-semibold text-white">
+                        <div className="font-semibold text-slate-100 font-mono">
                           Score: {att.score_percentage}% ({att.score_earned} marks)
                         </div>
                         <div className="text-[11px] text-slate-400">
@@ -546,7 +546,7 @@ export const LibraryPage: React.FC = () => {
                     </div>
                     <Link
                       to={`/sessions/${att.session_id}/results`}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition"
+                      className="px-3 py-1.5 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-semibold transition border border-slate-750"
                     >
                       View Report
                     </Link>
@@ -561,14 +561,14 @@ export const LibraryPage: React.FC = () => {
       {/* MODAL 2: Weak Questions */}
       {weakDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Most Missed Questions</h3>
+                  <h3 className="text-base font-bold text-slate-100 font-heading">Most Missed Questions</h3>
                   <p className="text-xs text-slate-400">{weakDoc.filename}</p>
                 </div>
               </div>
@@ -590,11 +590,11 @@ export const LibraryPage: React.FC = () => {
                   {weakQuestions.map((wq) => (
                     <div
                       key={wq.question_id}
-                      className="p-3 rounded-xl bg-[#0E1117] border border-slate-800 text-xs space-y-1"
+                      className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-white">Question {wq.number || ''}</span>
-                        <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-[10px]">
+                        <span className="font-semibold text-slate-100 font-heading">Question {wq.number || ''}</span>
+                        <span className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-[10px] font-mono">
                           Missed {wq.mistake_count} times ({Math.round(wq.error_rate * 100)}%)
                         </span>
                       </div>
@@ -622,14 +622,14 @@ export const LibraryPage: React.FC = () => {
       {/* MODAL 3: Export Options */}
       {exportDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
                   <Download className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Export Test Paper</h3>
+                  <h3 className="text-base font-bold text-slate-100 font-heading">Export Test Paper</h3>
                   <p className="text-xs text-slate-400">{exportDoc.filename}</p>
                 </div>
               </div>
@@ -643,14 +643,14 @@ export const LibraryPage: React.FC = () => {
                 href={getExportJsonUrl(exportDoc.id)}
                 download
                 onClick={() => setExportDoc(null)}
-                className="p-3 rounded-xl bg-[#0E1117] hover:bg-slate-850 border border-slate-800 transition flex items-center justify-between gap-3 group"
+                className="p-3.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 transition flex items-center justify-between gap-3 group"
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400">
                     <FileCode className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">Export JSON Question Set</div>
+                    <div className="text-xs font-semibold text-slate-100">Export JSON Question Set</div>
                     <div className="text-[11px] text-slate-400">Portable format for sharing and backup</div>
                   </div>
                 </div>
@@ -661,14 +661,14 @@ export const LibraryPage: React.FC = () => {
                 href={getExportPdfUrl(exportDoc.id, false)}
                 download
                 onClick={() => setExportDoc(null)}
-                className="p-3 rounded-xl bg-[#0E1117] hover:bg-slate-850 border border-slate-800 transition flex items-center justify-between gap-3 group"
+                className="p-3.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 transition flex items-center justify-between gap-3 group"
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">Printable Blank Test (PDF)</div>
+                    <div className="text-xs font-semibold text-slate-100">Printable Blank Test (PDF)</div>
                     <div className="text-[11px] text-slate-400">Clean exam paper with checkboxes</div>
                   </div>
                 </div>
@@ -679,14 +679,14 @@ export const LibraryPage: React.FC = () => {
                 href={getExportPdfUrl(exportDoc.id, true)}
                 download
                 onClick={() => setExportDoc(null)}
-                className="p-3 rounded-xl bg-[#0E1117] hover:bg-slate-850 border border-slate-800 transition flex items-center justify-between gap-3 group"
+                className="p-3.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 transition flex items-center justify-between gap-3 group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-300">
                     <FileText className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">Test Paper + Solution Key (PDF)</div>
+                    <div className="text-xs font-semibold text-slate-100">Test Paper + Solution Key (PDF)</div>
                     <div className="text-[11px] text-slate-400">Test paper with answer key section at end</div>
                   </div>
                 </div>
@@ -700,26 +700,26 @@ export const LibraryPage: React.FC = () => {
       {/* MODAL 4: Delete Confirmation */}
       {deletingDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-red-400">
-              <div className="p-2.5 rounded-xl bg-red-950/50 border border-red-800/40">
+              <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Delete Document</h3>
+                <h3 className="text-base font-bold text-slate-100 font-heading">Delete Document</h3>
                 <p className="text-xs text-slate-400">This action cannot be undone.</p>
               </div>
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
-              Are you sure you want to permanently delete <strong className="text-white">{deletingDoc.filename}</strong>?
+              Are you sure you want to permanently delete <strong className="text-slate-100">{deletingDoc.filename}</strong>?
               This will erase all questions and attempt history from the database.
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setDeletingDoc(null)}
-                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-700 transition cursor-pointer"
+                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold hover:bg-slate-750 transition cursor-pointer"
               >
                 Cancel
               </button>

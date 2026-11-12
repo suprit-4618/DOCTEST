@@ -104,11 +104,11 @@ export const TestSetupPage: React.FC = () => {
   const totalAvailable = questions.length;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 font-sans">
       {/* Back Button */}
       <Link
         to={id ? `/documents/${id}/review` : '/'}
-        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white mb-6 transition"
+        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-100 mb-6 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" /> Back to Question Review
       </Link>
@@ -118,26 +118,26 @@ export const TestSetupPage: React.FC = () => {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-semibold uppercase tracking-wider mb-3">
           <GraduationCap className="w-4 h-4" /> Test Session Configuration
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight font-heading">
           Configure Your Examination
         </h1>
         <p className="mt-1 text-sm text-slate-400 font-medium">
-          Document: <strong className="text-slate-200 px-2 py-0.5 rounded bg-slate-800 border border-slate-700 ml-0.5 mr-0.5">{doc?.filename}</strong> ({totalAvailable} questions available)
+          Document: <strong className="text-slate-200 px-2 py-0.5 rounded bg-slate-850 border border-slate-750 ml-0.5 mr-0.5">{doc?.filename}</strong> ({totalAvailable} questions available)
         </p>
       </div>
 
       {/* Security Banner */}
-      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs flex items-center gap-3 mb-8">
+      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs flex items-center gap-3 mb-8 shadow-sm">
         <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0" />
         <span>
-          <strong className="text-white">Isolated Key Security:</strong> Answer verification is isolated server-side. Full results and analytics are generated upon completion.
+          <strong className="text-slate-100">Isolated Key Security:</strong> Answer verification is isolated server-side. Full results and analytics are generated upon completion.
         </span>
       </div>
 
       <div className="space-y-6">
         {/* Step 1: Mode Selection */}
         <div>
-          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 font-heading">
             1. Select Session Mode
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -147,11 +147,11 @@ export const TestSetupPage: React.FC = () => {
               className={`p-6 rounded-2xl border cursor-pointer transition-all duration-150 ${
                 mode === 'exam'
                   ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/30'
-                  : 'border-slate-800 bg-[#161B22] hover:border-slate-700'
+                  : 'border-slate-800 bg-slate-900 hover:border-slate-750'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-base font-bold text-white flex items-center gap-2">
+                <span className="text-base font-bold text-slate-100 flex items-center gap-2 font-heading">
                   <GraduationCap className="w-5 h-5 text-orange-400" />
                   Examination Mode
                 </span>
@@ -168,11 +168,11 @@ export const TestSetupPage: React.FC = () => {
               className={`p-6 rounded-2xl border cursor-pointer transition-all duration-150 ${
                 mode === 'practice'
                   ? 'border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/30'
-                  : 'border-slate-800 bg-[#161B22] hover:border-slate-700'
+                  : 'border-slate-800 bg-slate-900 hover:border-slate-750'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-base font-bold text-white flex items-center gap-2">
+                <span className="text-base font-bold text-slate-100 flex items-center gap-2 font-heading">
                   <BookOpen className="w-5 h-5 text-emerald-400" />
                   Practice Mode
                 </span>
@@ -186,8 +186,8 @@ export const TestSetupPage: React.FC = () => {
         </div>
 
         {/* Step 2: Number of Questions */}
-        <div className="p-6 rounded-2xl bg-[#161B22] border border-slate-800">
-          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm transition-colors">
+          <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 font-heading">
             2. Question Set Size
           </label>
           <div className="flex flex-wrap items-center gap-3">
@@ -197,7 +197,7 @@ export const TestSetupPage: React.FC = () => {
               className={`px-4 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 questionCountType === 'all'
                   ? 'bg-orange-600 text-white shadow-sm'
-                  : 'bg-slate-800 text-slate-300 hover:text-white'
+                  : 'bg-slate-850 text-slate-300 hover:text-white border border-slate-750'
               }`}
             >
               All {totalAvailable} Questions
@@ -208,7 +208,7 @@ export const TestSetupPage: React.FC = () => {
               className={`px-4 py-2 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 questionCountType === 'custom'
                   ? 'bg-orange-600 text-white shadow-sm'
-                  : 'bg-slate-800 text-slate-300 hover:text-white'
+                  : 'bg-slate-850 text-slate-300 hover:text-white border border-slate-750'
               }`}
             >
               Random Subset
@@ -226,7 +226,7 @@ export const TestSetupPage: React.FC = () => {
                       Math.max(1, Math.min(totalAvailable, parseInt(e.target.value) || 1))
                     )
                   }
-                  className="w-20 px-3 py-1.5 bg-[#0E1117] border border-slate-700 rounded-lg text-white text-xs font-bold text-center focus:outline-none focus:border-orange-500"
+                  className="w-20 px-3 py-1.5 bg-slate-950 border border-slate-750 rounded-lg text-slate-100 text-xs font-bold text-center focus:outline-none focus:border-orange-500 font-mono"
                 />
                 <span className="text-xs text-slate-400 font-medium">questions</span>
               </div>
@@ -235,12 +235,12 @@ export const TestSetupPage: React.FC = () => {
         </div>
 
         {/* Step 3: Timer Options */}
-        <div className="p-6 rounded-2xl bg-[#161B22] border border-slate-800 space-y-4">
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm transition-colors space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white">Timer</span>
+                <span className="text-sm font-bold text-slate-100 font-heading">Timer</span>
                 <p className="text-xs text-slate-400">Time-limited session with automatic submission on expiration</p>
               </div>
             </div>
@@ -262,10 +262,10 @@ export const TestSetupPage: React.FC = () => {
                   key={mins}
                   type="button"
                   onClick={() => setTimeLimitMinutes(mins)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer font-mono ${
                     timeLimitMinutes === mins
                       ? 'bg-orange-600 text-white'
-                      : 'bg-slate-800 text-slate-300 hover:text-white'
+                      : 'bg-slate-850 text-slate-300 hover:text-white border border-slate-750'
                   }`}
                 >
                   {mins} min
@@ -278,7 +278,7 @@ export const TestSetupPage: React.FC = () => {
                   max={300}
                   value={timeLimitMinutes}
                   onChange={(e) => setTimeLimitMinutes(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 px-2.5 py-1 bg-[#0E1117] border border-slate-700 rounded-lg text-white text-xs font-bold text-center focus:outline-none focus:border-orange-500"
+                  className="w-16 px-2.5 py-1 bg-slate-950 border border-slate-750 rounded-lg text-slate-100 text-xs font-bold text-center focus:outline-none focus:border-orange-500 font-mono"
                 />
                 <span className="text-xs text-slate-400 font-medium">custom mins</span>
               </div>
@@ -287,12 +287,12 @@ export const TestSetupPage: React.FC = () => {
         </div>
 
         {/* Step 4: Randomization & Marking */}
-        <div className="p-6 rounded-2xl bg-[#161B22] border border-slate-800 space-y-4">
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm transition-colors space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Shuffle className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white">Shuffle Questions</span>
+                <span className="text-sm font-bold text-slate-100 font-heading">Shuffle Questions</span>
                 <p className="text-xs text-slate-400">Randomize question order for each session</p>
               </div>
             </div>
@@ -308,7 +308,7 @@ export const TestSetupPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <Layers className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white">Shuffle Options</span>
+                <span className="text-sm font-bold text-slate-100 font-heading">Shuffle Options</span>
                 <p className="text-xs text-slate-400">Randomize option order (A/B/C/D) per question</p>
               </div>
             </div>
@@ -324,7 +324,7 @@ export const TestSetupPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <MinusCircle className="w-5 h-5 text-amber-400" />
               <div>
-                <span className="text-sm font-bold text-white">Negative Marking Penalty</span>
+                <span className="text-sm font-bold text-slate-100 font-heading">Negative Marking Penalty</span>
                 <p className="text-xs text-slate-400">Deduct marks for incorrect answers</p>
               </div>
             </div>
@@ -334,10 +334,10 @@ export const TestSetupPage: React.FC = () => {
                   key={penalty}
                   type="button"
                   onClick={() => setNegativeMarking(penalty)}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer font-mono ${
                     negativeMarking === penalty
                       ? 'bg-amber-500 text-slate-950 font-bold'
-                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                      : 'bg-slate-850 text-slate-400 hover:text-white border border-slate-750'
                   }`}
                 >
                   {penalty === 0.0 ? 'None (0)' : `-${penalty}`}
@@ -351,7 +351,7 @@ export const TestSetupPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <CheckCheck className="w-5 h-5 text-emerald-400" />
               <div>
-                <span className="text-sm font-bold text-white">Partial Credit</span>
+                <span className="text-sm font-bold text-slate-100 font-heading">Partial Credit</span>
                 <p className="text-xs text-slate-400">Award partial credit for multi-select questions</p>
               </div>
             </div>
@@ -368,7 +368,7 @@ export const TestSetupPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <Target className="w-5 h-5 text-orange-400" />
               <div>
-                <span className="text-sm font-bold text-white">Target Score Threshold</span>
+                <span className="text-sm font-bold text-slate-100 font-heading">Target Score Threshold</span>
                 <p className="text-xs text-slate-400">Benchmark score percentage on performance report</p>
               </div>
             </div>
@@ -386,10 +386,10 @@ export const TestSetupPage: React.FC = () => {
                       key={pct}
                       type="button"
                       onClick={() => setTargetScorePercentage(pct)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition cursor-pointer font-mono ${
                         targetScorePercentage === pct
                           ? 'bg-orange-600 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white'
+                          : 'bg-slate-850 text-slate-400 hover:text-white border border-slate-750'
                       }`}
                     >
                       {pct}%
@@ -401,7 +401,7 @@ export const TestSetupPage: React.FC = () => {
                     max={100}
                     value={targetScorePercentage}
                     onChange={(e) => setTargetScorePercentage(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                    className="w-14 px-2 py-1 bg-[#0E1117] border border-slate-700 rounded-lg text-white text-xs text-center font-bold"
+                    className="w-14 px-2 py-1 bg-slate-950 border border-slate-750 rounded-lg text-slate-100 text-xs text-center font-bold font-mono"
                   />
                   <span className="text-xs text-slate-400 font-bold">%</span>
                 </div>
@@ -412,7 +412,7 @@ export const TestSetupPage: React.FC = () => {
 
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-950/40 border border-red-800/50 text-red-300 text-xs">
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs">
             {error}
           </div>
         )}

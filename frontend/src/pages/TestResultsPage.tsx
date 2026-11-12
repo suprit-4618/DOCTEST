@@ -146,11 +146,11 @@ export const TestResultsPage: React.FC = () => {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <XCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
-        <h2 className="text-xl font-bold text-white">Results Unavailable</h2>
+        <h2 className="text-xl font-bold text-slate-100 font-heading">Results Unavailable</h2>
         <p className="text-slate-400 text-sm mt-1">Unable to load the requested scorecard.</p>
         <button
           onClick={() => navigate('/')}
-          className="mt-6 px-5 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-semibold cursor-pointer hover:bg-slate-700"
+          className="mt-6 px-5 py-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 text-slate-100 text-xs font-semibold cursor-pointer border border-slate-750 transition"
         >
           Return to Dashboard
         </button>
@@ -199,32 +199,32 @@ export const TestResultsPage: React.FC = () => {
     switch (source) {
       case 'marked_in_document':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <CheckCircle2 className="w-3 h-3" /> Marked in Doc
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Marked in Doc
           </span>
         );
       case 'answer_key_in_document':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <KeyRound className="w-3 h-3" /> Answer Key
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+            <KeyRound className="w-3 h-3 text-emerald-400" /> Answer Key
           </span>
         );
       case 'ai_suggested':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20">
             <Bot className="w-3 h-3 text-orange-400" /> AI Suggested
           </span>
         );
       case 'manual':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <Edit3 className="w-3 h-3" /> Manual Edit
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">
-            <HelpCircle className="w-3 h-3" /> Not Graded
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">
+            <HelpCircle className="w-3 h-3 text-slate-400" /> Not Graded
           </span>
         );
     }
@@ -233,11 +233,11 @@ export const TestResultsPage: React.FC = () => {
   const getScoreColor = (pct: number) => {
     if (pct >= 80) return 'text-emerald-400';
     if (pct >= 60) return 'text-amber-400';
-    return 'text-orange-400';
+    return 'text-orange-500';
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 font-sans">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 font-sans">
       {/* Toast Notification */}
       {actionToast && (
         <div
@@ -260,14 +260,14 @@ export const TestResultsPage: React.FC = () => {
       <div className="mb-6">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition font-medium"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-100 transition font-medium"
         >
           <ArrowLeft className="w-4 h-4" /> Return to Dashboard
         </Link>
       </div>
 
       {/* Score Hero Card */}
-      <div className="bg-[#161B22] border border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-sm">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 mb-8 shadow-sm transition-colors">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-800">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 flex items-center justify-center">
@@ -275,7 +275,7 @@ export const TestResultsPage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-orange-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-orange-400 font-mono">
                   Evaluation Complete
                 </span>
                 {target_score_percentage !== null && target_score_percentage !== undefined && (
@@ -298,64 +298,64 @@ export const TestResultsPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mt-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 mt-1 font-heading">
                 Examination Scorecard
               </h1>
             </div>
           </div>
 
           <div className="text-center sm:text-right">
-            <div className={`text-4xl sm:text-5xl font-bold ${getScoreColor(score_percentage)}`}>
+            <div className={`text-4xl sm:text-5xl font-extrabold font-mono ${getScoreColor(score_percentage)}`}>
               {score_percentage}%
             </div>
             <div className="text-xs text-slate-400 font-medium mt-1">
-              Score: <strong className="text-white px-2 py-0.5 rounded bg-slate-900 border border-slate-800 ml-0.5 mr-0.5">{results.score_earned}</strong> / {total_graded} Graded
+              Score: <strong className="text-slate-100 px-2 py-0.5 rounded bg-slate-850 border border-slate-750 font-mono ml-0.5 mr-0.5">{results.score_earned}</strong> / {total_graded} Graded
             </div>
           </div>
         </div>
 
         {/* Breakdown Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-6">
-          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
-            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Correct</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-6 font-mono">
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider font-sans">Correct</div>
             <div className="text-xl font-bold text-emerald-400 mt-1 flex items-center justify-center gap-1">
               <CheckCircle2 className="w-4 h-4" />
               <span>{correct_count}</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
-            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Wrong</div>
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider font-sans">Wrong</div>
             <div className="text-xl font-bold text-red-400 mt-1 flex items-center justify-center gap-1">
               <XCircle className="w-4 h-4" />
               <span>{wrong_count}</span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
-            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Unanswered</div>
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider font-sans">Unanswered</div>
             <div className="text-xl font-bold text-slate-300 mt-1">
               {unanswered_count}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
-            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Not Graded</div>
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider font-sans">Not Graded</div>
             <div className="text-xl font-bold text-amber-400 mt-1" title="Excluded from scoring (no answer key)">
               {ungraded_count}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
-            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total Time</div>
-            <div className="text-sm font-semibold text-slate-200 mt-1 font-mono">
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider font-sans">Total Time</div>
+            <div className="text-sm font-semibold text-slate-200 mt-1">
               {formattedTime}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#0E1117] border border-slate-800 text-center">
-            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Avg Time / Q</div>
-            <div className="text-sm font-semibold text-slate-200 mt-1 font-mono flex items-center justify-center gap-1">
+          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+            <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider font-sans">Avg Time / Q</div>
+            <div className="text-sm font-semibold text-slate-200 mt-1 flex items-center justify-center gap-1">
               <Clock className="w-3.5 h-3.5 text-orange-400" />
               <span>{avg_time_per_question_seconds}s</span>
             </div>
@@ -367,7 +367,7 @@ export const TestResultsPage: React.FC = () => {
           <button
             onClick={() => handleRetake('same')}
             disabled={retaking}
-            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-white text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50 cursor-pointer"
           >
             {retaking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
             <span>Retake Same Test</span>
@@ -384,7 +384,7 @@ export const TestResultsPage: React.FC = () => {
 
           <Link
             to={`/documents/${document_id}/review`}
-            className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 transition"
+            className="px-4 py-2 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-white text-xs font-semibold flex items-center gap-1.5 transition"
           >
             <BookOpenCheck className="w-3.5 h-3.5 text-orange-400" />
             <span>Question Bank</span>
@@ -394,17 +394,17 @@ export const TestResultsPage: React.FC = () => {
       </div>
 
       {/* Review Section Header & Filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#161B22] border border-slate-800 mb-6">
-        <h2 className="text-sm font-bold text-white flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800 mb-6">
+        <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2 font-heading">
           <BookOpenCheck className="w-4 h-4 text-orange-400" />
-          Question Breakdown ({filteredResults.length})
+          <span>Question Breakdown ({filteredResults.length})</span>
         </h2>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setFilterType('all')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'all' ? 'bg-orange-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'all' ? 'bg-orange-600 text-white shadow-sm' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             All ({total_questions})
@@ -412,7 +412,7 @@ export const TestResultsPage: React.FC = () => {
           <button
             onClick={() => setFilterType('wrong')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'wrong' ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'wrong' ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             Wrong ({wrong_count})
@@ -420,7 +420,7 @@ export const TestResultsPage: React.FC = () => {
           <button
             onClick={() => setFilterType('unanswered')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'unanswered' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'unanswered' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             Unanswered ({unanswered_count})
@@ -428,7 +428,7 @@ export const TestResultsPage: React.FC = () => {
           <button
             onClick={() => setFilterType('flagged')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'flagged' ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'flagged' ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             Flagged ({flaggedCount})
@@ -436,7 +436,7 @@ export const TestResultsPage: React.FC = () => {
           <button
             onClick={() => setFilterType('correct')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'correct' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'correct' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             Correct ({correct_count})
@@ -453,20 +453,20 @@ export const TestResultsPage: React.FC = () => {
               key={q.question_id}
               className={`p-6 rounded-2xl border transition-colors ${
                 !q.is_graded
-                  ? 'bg-[#161B22] border-slate-800'
+                  ? 'bg-slate-900 border-slate-800'
                   : q.is_correct
-                  ? 'bg-[#161B22] border-emerald-500/40'
+                  ? 'bg-slate-900 border-emerald-500/40'
                   : q.is_partial
-                  ? 'bg-[#161B22] border-amber-500/40'
+                  ? 'bg-slate-900 border-amber-500/40'
                   : isUserAttempted
-                  ? 'bg-[#161B22] border-red-500/40'
-                  : 'bg-[#161B22] border-slate-800'
+                  ? 'bg-slate-900 border-red-500/40'
+                  : 'bg-slate-900 border-slate-800'
               }`}
             >
               {/* Question Header */}
               <div className="flex items-center justify-between pb-3.5 border-b border-slate-800 gap-3 mb-4">
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 font-bold text-xs flex items-center justify-center">
+                  <span className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 font-bold text-xs flex items-center justify-center font-mono">
                     Q{q.number || idx + 1}
                   </span>
 
@@ -474,7 +474,7 @@ export const TestResultsPage: React.FC = () => {
 
                   {/* Grading Status Badge */}
                   {!q.is_graded ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-800 px-3 py-1 rounded-md border border-slate-700">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 bg-slate-850 px-3 py-1 rounded-md border border-slate-750">
                       <HelpCircle className="w-3.5 h-3.5 text-slate-500" /> Not Graded
                     </span>
                   ) : q.is_correct ? (
@@ -490,7 +490,7 @@ export const TestResultsPage: React.FC = () => {
                       <X className="w-3.5 h-3.5 stroke-[2.5]" /> Incorrect ({q.score_earned < 0 ? `${q.score_earned}` : '0'})
                     </span>
                   ) : (
-                    <span className="text-xs font-medium text-slate-400 bg-slate-800 px-3 py-1 rounded-md border border-slate-700">
+                    <span className="text-xs font-medium text-slate-400 bg-slate-850 px-3 py-1 rounded-md border border-slate-750">
                       Unanswered (0)
                     </span>
                   )}
@@ -510,7 +510,7 @@ export const TestResultsPage: React.FC = () => {
 
               {/* Shared Passage / Context */}
               {q.context && (
-                <div className="my-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs">
+                <div className="my-3 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 text-xs">
                   <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-orange-400 mb-1">
                     <BookOpen className="w-3.5 h-3.5" />
                     <span>Reading Passage / Reference Context</span>
@@ -521,7 +521,7 @@ export const TestResultsPage: React.FC = () => {
 
               {/* Figure / Diagram Image */}
               {q.figure_image_url && (
-                <div className="my-3 p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col items-center">
+                <div className="my-3 p-3 rounded-xl bg-slate-950 border border-slate-800 flex flex-col items-center">
                   <div className="flex items-center gap-1.5 self-start text-xs font-semibold text-slate-400 mb-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-orange-400" />
                     <span>Referenced Figure</span>
@@ -546,17 +546,19 @@ export const TestResultsPage: React.FC = () => {
                   const isCorrectAnswer = q.correct_options.includes(opt.label);
                   const isUserSelected = q.selected_options.includes(opt.label);
 
-                  let borderStyle = 'border-slate-800 bg-[#0E1117] text-slate-300';
+                  let borderStyle = 'border-slate-800 bg-slate-950 text-slate-300';
                   if (isCorrectAnswer) {
                     borderStyle = 'border-emerald-500 bg-emerald-500/10 text-emerald-200 ring-1 ring-emerald-500/30';
                   } else if (isUserSelected && !isCorrectAnswer) {
                     borderStyle = 'border-red-500 bg-red-500/10 text-red-200 ring-1 ring-red-500/30';
                   }
 
+                  const displayText = opt.text && opt.text.trim() ? opt.text : `Option ${opt.label}`;
+
                   return (
                     <div
                       key={opt.label}
-                      className={`flex items-center gap-3 p-3 rounded-xl border text-xs font-medium transition-colors ${borderStyle}`}
+                      className={`flex items-center gap-3 p-3.5 rounded-xl border text-xs font-medium transition-colors ${borderStyle}`}
                     >
                       <span
                         className={`w-7 h-7 rounded-lg font-bold flex items-center justify-center flex-shrink-0 text-xs ${
@@ -564,19 +566,19 @@ export const TestResultsPage: React.FC = () => {
                             ? 'bg-emerald-600 text-white'
                             : isUserSelected
                             ? 'bg-red-600 text-white'
-                            : 'bg-slate-800 text-slate-300'
+                            : 'bg-slate-850 text-slate-300'
                         }`}
                       >
                         {opt.label}
                       </span>
-                      <FormattedContent text={opt.text} as="span" className="flex-grow font-normal text-slate-200" />
+                      <FormattedContent text={displayText} as="span" className="flex-grow font-normal text-slate-200" />
                       {isCorrectAnswer && (
-                        <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                        <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1 font-mono">
                           <Check className="w-3.5 h-3.5 stroke-[2.5]" /> Correct
                         </span>
                       )}
                       {isUserSelected && !isCorrectAnswer && (
-                        <span className="text-[11px] font-semibold text-red-400 flex items-center gap-1">
+                        <span className="text-[11px] font-semibold text-red-400 flex items-center gap-1 font-mono">
                           <X className="w-3.5 h-3.5 stroke-[2.5]" /> Your Pick
                         </span>
                       )}
@@ -587,7 +589,7 @@ export const TestResultsPage: React.FC = () => {
 
               {/* Explanation */}
               {q.explanation && (
-                <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-1">
+                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-1">
                   <div className="flex items-center gap-1.5 text-orange-400 font-semibold">
                     {q.answer_source === 'ai_suggested' && <Bot className="w-3.5 h-3.5 text-orange-400" />}
                     <span>Explanation {q.answer_source === 'ai_suggested' ? '(AI Verified)' : ''}:</span>
@@ -618,7 +620,7 @@ export const TestResultsPage: React.FC = () => {
                   <button
                     onClick={() => handleVerifyWithAi(q)}
                     disabled={verifyingQuestionId === q.question_id}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-orange-400 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-300 hover:text-orange-400 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
                   >
                     {verifyingQuestionId === q.question_id ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-400" />
@@ -639,11 +641,11 @@ export const TestResultsPage: React.FC = () => {
 
               {/* AI Verification Drawer */}
               {aiResults[q.question_id] && (
-                <div className="mt-3.5 p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-3">
+                <div className="mt-3.5 p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-3">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                     <div className="flex items-center gap-2">
                       <Bot className="w-4 h-4 text-orange-400" />
-                      <span className="font-semibold text-slate-200 uppercase tracking-wider text-[11px]">
+                      <span className="font-semibold text-slate-200 uppercase tracking-wider text-[11px] font-heading">
                         AI Verification Analysis
                       </span>
                     </div>
@@ -663,7 +665,7 @@ export const TestResultsPage: React.FC = () => {
 
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-slate-400 font-medium">Recommended Correct Option:</span>
-                    <span className="px-2 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-orange-300 font-bold text-xs">
+                    <span className="px-2 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-orange-300 font-bold text-xs font-mono">
                       Option {aiResults[q.question_id].suggested_options.join(', ')}
                     </span>
                     {aiResults[q.question_id].suggested_options.some(opt => q.selected_options.includes(opt)) && (
@@ -674,7 +676,7 @@ export const TestResultsPage: React.FC = () => {
                   </div>
 
                   {aiResults[q.question_id].explanation && (
-                    <div className="text-slate-300 leading-relaxed bg-[#0E1117] p-3 rounded-lg border border-slate-800 space-y-1">
+                    <div className="text-slate-300 leading-relaxed bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-1">
                       <strong className="text-orange-400 block font-semibold">AI Reasoning:</strong>
                       <FormattedContent text={aiResults[q.question_id].explanation} className="leading-relaxed text-slate-300 font-normal" />
                     </div>

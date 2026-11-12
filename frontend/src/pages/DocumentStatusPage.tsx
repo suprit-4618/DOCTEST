@@ -7,7 +7,8 @@ import {
   RotateCcw, 
   Eye,
   BookOpenCheck,
-  AlertTriangle
+  AlertTriangle,
+  Play
 } from 'lucide-react';
 import { getDocument, getPageImageUrl, triggerAiExtraction } from '../api/documents';
 import type { DocumentResponse } from '../types';
@@ -63,8 +64,8 @@ export const DocumentStatusPage: React.FC = () => {
   if (loading && !doc) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-500 mx-auto mb-4" />
-        <p className="text-slate-400">Loading document status...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-orange-500 mx-auto mb-4" />
+        <p className="text-slate-400 font-medium">Checking ingestion status...</p>
       </div>
     );
   }
@@ -72,14 +73,14 @@ export const DocumentStatusPage: React.FC = () => {
   if (error && !doc) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-red-950/40 border border-red-800/60 text-red-400 flex items-center justify-center mx-auto mb-4">
-          <XCircle className="w-8 h-8" />
+        <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-4">
+          <XCircle className="w-6 h-6" />
         </div>
-        <h2 className="text-xl font-bold text-white">Document Not Found</h2>
+        <h2 className="text-xl font-bold text-slate-100 font-heading">Document Not Found</h2>
         <p className="text-slate-400 text-sm mt-2">{error}</p>
         <button
           onClick={() => navigate('/upload')}
-          className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium transition cursor-pointer"
+          className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-100 text-xs font-semibold transition cursor-pointer"
         >
           <RotateCcw className="w-4 h-4" /> Back to Upload
         </button>
@@ -96,29 +97,31 @@ export const DocumentStatusPage: React.FC = () => {
     : 0;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 font-sans">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-slate-800/80 gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-slate-800 gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black uppercase tracking-wider text-rose-500 dark:text-rose-300 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-400/30 shadow-sm">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-orange-400 bg-orange-500/10 px-2.5 py-0.5 rounded-md border border-orange-500/20 font-mono">
               {doc?.file_type?.toUpperCase()}
             </span>
-            <span className="text-xs text-slate-400 font-mono">ID: {doc?.id.slice(0, 8)}...</span>
+            <span className="text-xs text-slate-500 font-mono">ID: {doc?.id.slice(0, 8)}...</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white mt-1.5 font-heading">{doc?.filename}</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight font-heading">
+            {doc?.filename}
+          </h1>
         </div>
 
         <Link
           to="/upload"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-rose-400 transition px-3.5 py-2 rounded-2xl bg-slate-800/80 shadow-cozy-pill"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-slate-100 transition px-3.5 py-2 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-750"
         >
           <RotateCcw className="w-3.5 h-3.5" /> Upload Another
         </Link>
       </div>
 
       {/* Main Status Container */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm mb-8">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm mb-8 transition-colors">
         {/* Processing State */}
         {isProcessing && (
           <div className="space-y-6">
@@ -127,7 +130,7 @@ export const DocumentStatusPage: React.FC = () => {
                 <Loader2 className="w-5 h-5 animate-spin" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-white font-heading">Processing Document...</h2>
+                <h2 className="text-base font-bold text-slate-100 font-heading">Processing Document...</h2>
                 <p className="text-xs text-slate-400">
                   Extracting multiple-choice questions, isolating option stems, and preparing exam review.
                 </p>
@@ -140,7 +143,7 @@ export const DocumentStatusPage: React.FC = () => {
                 <span>
                   Processing page {doc?.pages_processed || 0} of {doc?.page_count || 1}
                 </span>
-                <span className="font-mono text-orange-400">{progressPercent}%</span>
+                <span className="font-mono text-orange-400 font-bold">{progressPercent}%</span>
               </div>
               <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
                 <div
@@ -171,19 +174,29 @@ export const DocumentStatusPage: React.FC = () => {
             <div className="flex items-start gap-4 p-5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300">
               <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold text-red-200 text-sm">Ingestion Encountered an Issue</h3>
-                <p className="text-xs text-red-300/90 mt-1">
+                <h3 className="font-bold text-red-200 text-sm font-heading">Ingestion Encountered an Issue</h3>
+                <p className="text-xs text-red-300/90 mt-1 leading-relaxed">
                   {doc?.error_message || 'An unexpected error occurred while processing the document.'}
                 </p>
               </div>
             </div>
 
-            <button
-              onClick={() => navigate('/upload')}
-              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-white text-xs font-semibold transition cursor-pointer"
-            >
-              Try Uploading Again
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleTriggerExtraction}
+                disabled={extracting}
+                className="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {extracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                <span>{extracting ? 'Retrying Ingestion...' : 'Retry Extraction'}</span>
+              </button>
+              <button
+                onClick={() => navigate('/upload')}
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
+              >
+                Upload Different File
+              </button>
+            </div>
           </div>
         )}
 
@@ -195,7 +208,7 @@ export const DocumentStatusPage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
                   <div>
-                    <h3 className="font-bold text-slate-100 text-sm">No Questions Extracted Yet</h3>
+                    <h3 className="font-bold text-slate-100 text-sm font-heading">No Questions Extracted Yet</h3>
                     <p className="text-xs text-slate-400">
                       Pages were rendered ({doc?.page_count} pages), but 0 MCQs were detected.
                     </p>
@@ -206,7 +219,7 @@ export const DocumentStatusPage: React.FC = () => {
                   <button
                     onClick={handleTriggerExtraction}
                     disabled={extracting}
-                    className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {extracting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
                     <span>{extracting ? 'Extracting...' : 'Retry Extraction'}</span>
@@ -218,7 +231,7 @@ export const DocumentStatusPage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                   <div>
-                    <h3 className="font-bold text-slate-100 text-sm">Document Extraction Complete</h3>
+                    <h3 className="font-bold text-slate-100 text-sm font-heading">Document Extraction Complete</h3>
                     <p className="text-xs text-slate-400">
                       Successfully extracted {doc?.question_count} questions from {doc?.page_count} page{doc && doc.page_count > 1 ? 's' : ''}.
                     </p>
@@ -228,16 +241,17 @@ export const DocumentStatusPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => navigate(`/documents/${doc?.id}/review`)}
-                    className="px-4 py-2 rounded-lg bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center gap-1.5"
                   >
                     <BookOpenCheck className="w-3.5 h-3.5" />
                     <span>Review Questions</span>
                   </button>
                   <button
                     onClick={() => navigate(`/documents/${doc?.id}/setup`)}
-                    className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition cursor-pointer flex items-center gap-1.5"
                   >
-                    <span>Start Test</span>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Configure Test</span>
                   </button>
                 </div>
               </div>
@@ -247,11 +261,11 @@ export const DocumentStatusPage: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-center">
                 <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Pages</div>
-                <div className="text-lg font-bold text-slate-100 mt-0.5">{doc?.page_count}</div>
+                <div className="text-lg font-bold text-slate-100 mt-0.5 font-mono">{doc?.page_count}</div>
               </div>
               <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-center">
                 <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Questions</div>
-                <div className="text-lg font-bold text-orange-400 mt-0.5">{doc?.question_count || 0}</div>
+                <div className="text-lg font-bold text-orange-400 mt-0.5 font-mono">{doc?.question_count || 0}</div>
               </div>
               <div className="p-3.5 rounded-xl bg-slate-850 border border-slate-800 text-center">
                 <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Resolution</div>
@@ -266,27 +280,27 @@ export const DocumentStatusPage: React.FC = () => {
         )}
       </div>
 
-      {/* Rendered Page Image Gallery / Viewer */}
+      {/* Rendered Page Image Filmstrip / Preview */}
       {isExtracted && doc && doc.id && (
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm transition-colors">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold text-white flex items-center gap-2">
-              <Eye className="w-4 h-4 text-indigo-400" />
-              Rendered Page Preview (Page {selectedPreviewPage} of {doc.page_count})
+            <h3 className="text-sm font-bold text-slate-100 font-heading flex items-center gap-2">
+              <Eye className="w-4 h-4 text-orange-400" />
+              <span>Rendered Page Inspection (Page {selectedPreviewPage} of {doc.page_count})</span>
             </h3>
           </div>
 
           {/* Page Selector Tabs */}
           {doc.page_count > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-4">
+            <div className="flex gap-1.5 overflow-x-auto pb-3 mb-4">
               {Array.from({ length: doc.page_count }, (_, i) => i + 1).map((pageNum) => (
                 <button
                   key={pageNum}
                   onClick={() => setSelectedPreviewPage(pageNum)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex-shrink-0 ${
                     selectedPreviewPage === pageNum
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                      ? 'bg-orange-600 text-white shadow-sm'
+                      : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
                   }`}
                 >
                   Page {pageNum}
@@ -300,7 +314,7 @@ export const DocumentStatusPage: React.FC = () => {
             <img
               src={getPageImageUrl(doc.id, selectedPreviewPage || 1)}
               alt={`Page ${selectedPreviewPage}`}
-              className="max-w-full h-auto rounded shadow-lg border border-slate-800"
+              className="max-w-full h-auto rounded shadow-sm border border-slate-800"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}

@@ -132,11 +132,12 @@ D) object`;
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14 font-sans">
       {/* Title */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-3">
-          <FileText className="w-3.5 h-3.5 text-emerald-500" /> Document Ingestion
+          <FileText className="w-3.5 h-3.5 text-emerald-500" />
+          <span>Document Ingestion Studio</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-100 tracking-tight font-heading">
           Upload Examination Document
@@ -146,13 +147,13 @@ D) object`;
         </p>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm transition-colors">
         {/* Tab Selection */}
         <div className="flex p-1 rounded-xl bg-slate-850 border border-slate-800 mb-6 max-w-md mx-auto">
           <button
             type="button"
             onClick={() => { setActiveTab('file'); setError(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-xs transition cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-xs transition-colors cursor-pointer ${
               activeTab === 'file'
                 ? 'bg-orange-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
@@ -164,7 +165,7 @@ D) object`;
           <button
             type="button"
             onClick={() => { setActiveTab('text'); setError(null); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-xs transition cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-semibold text-xs transition-colors cursor-pointer ${
               activeTab === 'text'
                 ? 'bg-orange-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
@@ -186,7 +187,7 @@ D) object`;
               value={docTitle}
               onChange={(e) => setDocTitle(e.target.value)}
               placeholder="e.g., CDS English Examination 2026, Civil Services Paper I"
-              className="w-full px-4 py-2.5 bg-slate-850 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition"
+              className="w-full px-4 py-2.5 bg-slate-850 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
             />
           </div>
 
@@ -206,11 +207,11 @@ D) object`;
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 text-center cursor-pointer transition-all duration-150 ${
+                className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-150 ${
                   isDragging
                     ? 'border-orange-500 bg-orange-500/10'
                     : selectedFile
-                    ? 'border-emerald-500/40 bg-emerald-500/5'
+                    ? 'border-emerald-500/50 bg-emerald-500/5'
                     : 'border-slate-800 bg-slate-850/40 hover:border-orange-500/50 hover:bg-slate-850'
                 }`}
               >
@@ -221,8 +222,8 @@ D) object`;
                     </div>
                     <div>
                       <p className="text-base font-bold text-slate-100 font-heading">{selectedFile.name}</p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB &bull; Click to replace
+                      <p className="text-xs text-slate-400 mt-1 font-mono">
+                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB &bull; Click or drop another to replace
                       </p>
                     </div>
                   </div>
@@ -241,14 +242,14 @@ D) object`;
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                      <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
-                        <FileTypeIcon className="w-3 h-3 text-orange-400" /> PDF
+                      <span className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-750 font-medium">
+                        <FileTypeIcon className="w-3.5 h-3.5 text-orange-400" /> PDF Papers
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
-                        <ImageIcon className="w-3 h-3 text-emerald-400" /> Scans & Photos
+                      <span className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-750 font-medium">
+                        <ImageIcon className="w-3.5 h-3.5 text-emerald-400" /> Scans & Photos
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700/60 font-medium">
-                        <FileText className="w-3 h-3 text-slate-300" /> Word DOCX
+                      <span className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-750 font-medium">
+                        <FileText className="w-3.5 h-3.5 text-slate-400" /> Word DOCX
                       </span>
                     </div>
                   </div>
@@ -267,7 +268,7 @@ D) object`;
                 <button
                   type="button"
                   onClick={handlePasteSampleText}
-                  className="text-xs text-orange-400 hover:text-orange-300 transition font-semibold cursor-pointer"
+                  className="text-xs text-orange-400 hover:text-orange-300 transition-colors font-semibold cursor-pointer"
                 >
                   Insert Sample Questions
                 </button>
@@ -277,7 +278,7 @@ D) object`;
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
                 placeholder="Paste your questions here... (e.g. 1. What is...? A) ... B) ...)"
-                className="w-full px-4 py-3 bg-slate-850 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm font-mono focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition leading-relaxed"
+                className="w-full px-4 py-3 bg-slate-850 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 text-sm font-mono focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors leading-relaxed"
               />
             </div>
           )}
@@ -297,7 +298,7 @@ D) object`;
           <button
             type="submit"
             disabled={uploading}
-            className="w-full py-3 px-6 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+            className="w-full py-3.5 px-6 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-semibold text-sm shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
           >
             {uploading ? (
               <>
@@ -306,7 +307,7 @@ D) object`;
               </>
             ) : (
               <>
-                <span>Ingest Document & Begin Extraction</span>
+                <span>Ingest Document &amp; Begin Extraction</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

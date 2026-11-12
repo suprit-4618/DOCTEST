@@ -19,6 +19,14 @@ Follow these strict rules:
 
 2. OPTION NORMALIZATION & VARIABLE OPTION COUNTS (2 to 6 OPTIONS):
    - Support any number of options between 2 and 6 (e.g. 2 choices for True/False, 3 choices, standard 4 choices, or 5-6 choices). Extract all visible options with sequential labels ('A', 'B', 'C'...).
+   - SPOTTING ERRORS / SENTENCE DIVISION QUESTIONS:
+     When an exam question presents a single sentence divided into parts (e.g. `In your quotidian life (a) / you wouldn't find (b) / an elephant in the supermarket. (c) / No error (d)` or underlined parts marked (a), (b), (c), (d)):
+     * The options ARE the individual sentence parts!
+       Option A: the text for part (a) (e.g. "In your quotidian life")
+       Option B: the text for part (b) (e.g. "you wouldn't find")
+       Option C: the text for part (c) (e.g. "an elephant in the supermarket.")
+       Option D: "No error" (or part d text)
+     * NEVER leave option text empty for A, B, or C! Each option MUST contain the corresponding text chunk from the sentence.
    - REPAIR OCR DEFECTS IN OPTIONS: Repair obvious OCR character corruptions in tokens/variables, such as personalization strings where '%%' was misread as 'ss', 'sf', or 'st' (e.g. 'sssubscriberidss' -> '%%subscriberid%%', 'sfmenberidss' -> '%%memberid%%', 'stcontaotkeyes' -> '%%contactkey%%').
    - Normalize option labels to standard uppercase letters ('A', 'B', 'C', 'D', 'E', 'F'):
      * 'A.', 'B.', 'C.', 'D.' -> 'A', 'B', 'C', 'D'

@@ -249,32 +249,32 @@ export const ReviewPage: React.FC = () => {
     switch (source) {
       case 'marked_in_document':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <CheckCircle2 className="w-3 h-3" /> Marked in Doc
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Marked in Doc
           </span>
         );
       case 'answer_key_in_document':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <KeyRound className="w-3 h-3" /> Answer Key
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+            <KeyRound className="w-3 h-3 text-emerald-400" /> Answer Key
           </span>
         );
       case 'ai_suggested':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-orange-500/10 text-orange-400 border border-orange-500/20">
             <Bot className="w-3 h-3 text-orange-400" /> AI Suggested
           </span>
         );
       case 'manual':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20">
             <Edit3 className="w-3 h-3" /> Manual Edit
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-red-500/10 text-red-400 border border-red-500/20">
-            <HelpCircle className="w-3 h-3" /> No Answer
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700">
+            <HelpCircle className="w-3 h-3 text-slate-400" /> No Answer
           </span>
         );
     }
@@ -284,7 +284,7 @@ export const ReviewPage: React.FC = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
         <Loader2 className="w-10 h-10 animate-spin text-orange-500 mx-auto mb-4" />
-        <p className="text-slate-400 font-medium">Loading extracted questions for review...</p>
+        <p className="text-slate-400 font-medium">Loading question bank...</p>
       </div>
     );
   }
@@ -292,14 +292,14 @@ export const ReviewPage: React.FC = () => {
   if (error && questions.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="w-12 h-12 rounded-xl bg-red-950/40 border border-red-800/60 text-red-400 flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center mx-auto mb-4">
           <AlertTriangle className="w-6 h-6" />
         </div>
-        <h2 className="text-xl font-bold text-white">Failed to Load Questions</h2>
+        <h2 className="text-xl font-bold text-slate-100 font-heading">Failed to Load Questions</h2>
         <p className="text-slate-400 text-sm mt-2">{error}</p>
         <button
           onClick={() => navigate('/')}
-          className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition cursor-pointer"
+          className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-100 text-xs font-semibold transition cursor-pointer"
         >
           Back to Dashboard
         </button>
@@ -308,10 +308,10 @@ export const ReviewPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 font-sans">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-xl bg-slate-900 border border-emerald-500/40 text-white shadow-xl flex items-center gap-3">
+        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-xl bg-slate-900 border border-emerald-500/40 text-slate-100 shadow-xl flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
           <span className="text-sm font-medium">{notification.message}</span>
         </div>
@@ -321,13 +321,13 @@ export const ReviewPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800 mb-6">
         <div>
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
-            <Link to="/" className="hover:text-white">Home</Link>
+            <Link to="/" className="hover:text-slate-200 transition-colors">Home</Link>
             <span>&bull;</span>
-            <Link to={`/documents/${id}`} className="hover:text-white">{doc?.filename}</Link>
+            <Link to={`/documents/${id}`} className="hover:text-slate-200 transition-colors">{doc?.filename}</Link>
             <span>&bull;</span>
             <span className="text-orange-400 font-semibold">Question Review</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight font-heading">
             Review &amp; Edit Questions
           </h1>
         </div>
@@ -347,27 +347,27 @@ export const ReviewPage: React.FC = () => {
       <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs font-medium mb-6">
         <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
         <span>
-          <strong className="text-white">Isolated Environment:</strong> Questions and answers are maintained here for instructor review. During examination mode, answer keys remain isolated on the server.
+          <strong className="text-slate-100">Isolated Environment:</strong> Questions and answers are maintained here for instructor review. During examination mode, answer keys remain isolated on the server.
         </span>
       </div>
 
       {/* Summary Header Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="p-4 rounded-xl bg-[#161B22] border border-slate-800 text-center">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center">
           <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Total Questions</div>
-          <div className="text-2xl font-bold text-white mt-1">{totalCount}</div>
+          <div className="text-2xl font-bold text-slate-100 mt-1 font-mono">{totalCount}</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#161B22] border border-slate-800 text-center">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center">
           <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Answers Detected</div>
-          <div className="text-2xl font-bold text-emerald-400 mt-1">{withAnswersCount}</div>
+          <div className="text-2xl font-bold text-emerald-400 mt-1 font-mono">{withAnswersCount}</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#161B22] border border-slate-800 text-center">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center">
           <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Un-annotated</div>
-          <div className="text-2xl font-bold text-orange-400 mt-1">{noAnswersCount}</div>
+          <div className="text-2xl font-bold text-orange-400 mt-1 font-mono">{noAnswersCount}</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#161B22] border border-slate-800 text-center">
+        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center">
           <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Needs Review</div>
-          <div className="text-2xl font-bold text-amber-400 mt-1">{needsReviewCount}</div>
+          <div className="text-2xl font-bold text-amber-400 mt-1 font-mono">{needsReviewCount}</div>
         </div>
       </div>
 
@@ -377,7 +377,7 @@ export const ReviewPage: React.FC = () => {
           <div className="flex items-start gap-3.5">
             <AlertTriangle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
             <div className="flex-grow">
-              <h3 className="text-sm font-bold text-white">
+              <h3 className="text-sm font-bold text-slate-100 font-heading">
                 {noAnswersCount} question{noAnswersCount > 1 ? 's do' : ' does'} not have an answer detected yet
               </h3>
               <p className="text-xs text-slate-400 mt-1">
@@ -396,7 +396,7 @@ export const ReviewPage: React.FC = () => {
 
                 <button
                   onClick={() => setIsAnswerKeyOpen(true)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <KeyRound className="w-3.5 h-3.5 text-orange-400" />
                   <span>Paste Bulk Answer Key</span>
@@ -404,7 +404,7 @@ export const ReviewPage: React.FC = () => {
 
                 <button
                   onClick={() => navigate(`/documents/${id}/setup`)}
-                  className="px-4 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  className="px-4 py-2 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <span>Practice Without Key</span>
                 </button>
@@ -415,7 +415,7 @@ export const ReviewPage: React.FC = () => {
       )}
 
       {/* Control Bar: Filters, Sorting, Actions */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#161B22] border border-slate-800 mb-6">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900 border border-slate-800 mb-6">
         {/* Filter Pills */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-slate-400 font-semibold flex items-center gap-1 mr-1">
@@ -424,7 +424,7 @@ export const ReviewPage: React.FC = () => {
           <button
             onClick={() => setFilterType('all')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'all' ? 'bg-orange-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'all' ? 'bg-orange-600 text-white shadow-sm' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             All ({totalCount})
@@ -432,7 +432,7 @@ export const ReviewPage: React.FC = () => {
           <button
             onClick={() => setFilterType('needs_review')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'needs_review' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'needs_review' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             Needs Review ({needsReviewCount})
@@ -440,7 +440,7 @@ export const ReviewPage: React.FC = () => {
           <button
             onClick={() => setFilterType('no_answer')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'no_answer' ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'no_answer' ? 'bg-orange-700 text-white shadow-sm' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             No Answer ({noAnswersCount})
@@ -448,7 +448,7 @@ export const ReviewPage: React.FC = () => {
           <button
             onClick={() => setFilterType('has_answer')}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition cursor-pointer ${
-              filterType === 'has_answer' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400 hover:text-white'
+              filterType === 'has_answer' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-850 text-slate-400 hover:text-slate-200 border border-slate-800'
             }`}
           >
             With Answers ({withAnswersCount})
@@ -456,13 +456,13 @@ export const ReviewPage: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setSortByReview(!sortByReview)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
               sortByReview
                 ? 'bg-orange-500/20 border-orange-500/40 text-orange-300'
-                : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'
+                : 'bg-slate-850 border-slate-750 text-slate-300 hover:text-slate-100'
             }`}
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
@@ -471,7 +471,7 @@ export const ReviewPage: React.FC = () => {
 
           <button
             onClick={() => setIsAnswerKeyOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 text-xs font-semibold transition cursor-pointer"
           >
             <KeyRound className="w-3.5 h-3.5 text-orange-400" />
             <span>Answer Key</span>
@@ -499,11 +499,11 @@ export const ReviewPage: React.FC = () => {
 
       {/* Question Cards List & Empty State */}
       {displayedQuestions.length === 0 ? (
-        <div className="p-12 rounded-2xl bg-[#161B22] border border-slate-800 text-center space-y-4 my-8">
-          <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+        <div className="p-12 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4 my-8">
+          <div className="w-12 h-12 rounded-full bg-slate-850 flex items-center justify-center mx-auto text-slate-400">
             <HelpCircle className="w-6 h-6" />
           </div>
-          <h3 className="text-lg font-bold text-white">No Multiple-Choice Questions Found</h3>
+          <h3 className="text-lg font-bold text-slate-100 font-heading">No Multiple-Choice Questions Found</h3>
           <p className="text-sm text-slate-400 max-w-md mx-auto">
             {questions.length === 0
               ? 'No multiple-choice questions were detected in this document. You can add questions manually or import an answer key.'
@@ -519,7 +519,7 @@ export const ReviewPage: React.FC = () => {
             </button>
             <button
               onClick={() => setIsAnswerKeyOpen(true)}
-              className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold inline-flex items-center gap-2 border border-slate-700 cursor-pointer"
+              className="px-4 py-2 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-200 text-xs font-semibold inline-flex items-center gap-2 border border-slate-750 cursor-pointer"
             >
               <KeyRound className="w-4 h-4 text-orange-400" />
               <span>Set Answer Key</span>
@@ -535,20 +535,20 @@ export const ReviewPage: React.FC = () => {
                 key={q.id}
                 className={`p-6 rounded-2xl border transition-colors ${
                   isHighReview
-                    ? 'bg-[#161B22] border-amber-500/40'
-                    : 'bg-[#161B22] border-slate-800 hover:border-slate-700'
+                    ? 'bg-slate-900 border-amber-500/40'
+                    : 'bg-slate-900 border-slate-800 hover:border-slate-750'
                 }`}
               >
                 {/* Question Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3.5 border-b border-slate-800 gap-3">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 font-bold text-xs flex items-center justify-center">
+                    <span className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-400 font-bold text-xs flex items-center justify-center font-mono">
                       Q{q.number || '·'}
                     </span>
                     {getSourceBadge(q.answer_source)}
 
                     {isHighReview && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30">
                         <AlertTriangle className="w-3 h-3" /> Needs Review ({Math.round(q.confidence * 100)}%)
                       </span>
                     )}
@@ -556,7 +556,7 @@ export const ReviewPage: React.FC = () => {
                     {q.source_page && (
                       <button
                         onClick={() => setPreviewPage(q.source_page ?? 1)}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-orange-400 transition cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-0.5 rounded-md bg-slate-850 text-slate-400 hover:text-orange-400 border border-slate-800 transition cursor-pointer"
                       >
                         <Eye className="w-3 h-3" /> Page {q.source_page}
                       </button>
@@ -567,7 +567,7 @@ export const ReviewPage: React.FC = () => {
                     <button
                       onClick={() => handleAiVerifySingle(q.id)}
                       disabled={aiVerifyingId === q.id}
-                      className="p-1.5 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-orange-400 transition cursor-pointer text-xs font-semibold flex items-center gap-1.5 px-3 disabled:opacity-50"
+                      className="p-1.5 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-300 hover:text-orange-400 transition cursor-pointer text-xs font-semibold flex items-center gap-1.5 px-3 disabled:opacity-50"
                       title="Run AI Solver on this specific question to verify correct answer"
                     >
                       {aiVerifyingId === q.id ? (
@@ -580,7 +580,7 @@ export const ReviewPage: React.FC = () => {
 
                     <button
                       onClick={() => setEditingQuestion(q)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer text-xs font-semibold flex items-center gap-1.5 px-3"
+                      className="p-1.5 rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-750 text-slate-300 hover:text-white transition cursor-pointer text-xs font-semibold flex items-center gap-1.5 px-3"
                     >
                       <Edit3 className="w-3.5 h-3.5 text-slate-400" />
                       <span>Edit</span>
@@ -588,7 +588,7 @@ export const ReviewPage: React.FC = () => {
 
                     <button
                       onClick={() => handleDelete(q.id, q.number)}
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition cursor-pointer text-xs"
+                      className="p-1.5 rounded-lg bg-slate-850 hover:bg-red-500/20 border border-slate-750 text-slate-400 hover:text-red-400 transition cursor-pointer text-xs"
                       title="Delete question"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -598,7 +598,7 @@ export const ReviewPage: React.FC = () => {
 
                 {/* Shared Passage / Context */}
                 {q.context && (
-                  <div className="my-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs">
+                  <div className="my-3 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 text-xs">
                     <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-orange-400 mb-1">
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>Reading Passage / Reference Context</span>
@@ -609,7 +609,7 @@ export const ReviewPage: React.FC = () => {
 
                 {/* Figure / Diagram Image */}
                 {q.figure_image_url && (
-                  <div className="my-3 p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col items-center">
+                  <div className="my-3 p-3 rounded-xl bg-slate-950 border border-slate-800 flex flex-col items-center">
                     <div className="flex items-center gap-1.5 self-start text-xs font-semibold text-slate-400 mb-1.5">
                       <ImageIcon className="w-3.5 h-3.5 text-orange-400" />
                       <span>Referenced Figure</span>
@@ -632,17 +632,17 @@ export const ReviewPage: React.FC = () => {
                     return (
                       <div
                         key={opt.label}
-                        className={`flex items-center gap-3 p-3 rounded-xl border text-xs transition-colors ${
+                        className={`flex items-center gap-3 p-3.5 rounded-xl border text-xs transition-colors ${
                           isCorrect
                             ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-200'
-                            : 'bg-[#0E1117] border-slate-800 text-slate-300'
+                            : 'bg-slate-950 border-slate-800 text-slate-300'
                         }`}
                       >
                         <span
                           className={`w-7 h-7 rounded-lg font-bold flex items-center justify-center flex-shrink-0 text-xs ${
                             isCorrect
                               ? 'bg-emerald-600 text-white'
-                              : 'bg-slate-800 text-slate-300'
+                              : 'bg-slate-850 text-slate-300'
                           }`}
                         >
                           {opt.label}
@@ -656,7 +656,7 @@ export const ReviewPage: React.FC = () => {
 
                 {/* Explanation */}
                 {q.explanation && (
-                  <div className="mt-2 p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+                  <div className="mt-2 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-400">
                     <strong className="text-slate-200 block mb-1 font-semibold">Explanation:</strong>
                     <FormattedContent text={q.explanation} className="leading-relaxed pl-2 font-normal" />
                   </div>
@@ -670,9 +670,9 @@ export const ReviewPage: React.FC = () => {
       {/* Modal: Edit Question Inline */}
       {editingQuestion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 my-8">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 font-heading">
                 <Edit3 className="w-5 h-5 text-orange-400" />
                 Edit Question {editingQuestion.number}
               </h3>
@@ -686,7 +686,7 @@ export const ReviewPage: React.FC = () => {
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 font-heading">
                   Question Text
                 </label>
                 <textarea
@@ -695,14 +695,14 @@ export const ReviewPage: React.FC = () => {
                   onChange={(e) =>
                     setEditingQuestion({ ...editingQuestion, text: e.target.value })
                   }
-                  className="w-full px-3 py-2 bg-[#0E1117] border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500 transition-colors"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                    Options & Correct Answers (Click letter to toggle correct answer)
+                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-heading">
+                    Options &amp; Correct Answers (Click letter to toggle correct answer)
                   </label>
                   <button
                     type="button"
@@ -713,7 +713,7 @@ export const ReviewPage: React.FC = () => {
                         options: [...editingQuestion.options, { label: nextLabel, text: '' }],
                       });
                     }}
-                    className="text-xs text-orange-400 hover:text-orange-300 font-medium cursor-pointer"
+                    className="text-xs text-orange-400 hover:text-orange-300 font-semibold cursor-pointer"
                   >
                     + Add Option
                   </button>
@@ -747,7 +747,7 @@ export const ReviewPage: React.FC = () => {
                             newOpts[idx].text = e.target.value;
                             setEditingQuestion({ ...editingQuestion, options: newOpts });
                           }}
-                          className="flex-grow px-3 py-1.5 bg-[#0E1117] border border-slate-800 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-orange-500"
+                          className="flex-grow px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
                         />
                         <button
                           type="button"
@@ -766,7 +766,7 @@ export const ReviewPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 font-heading">
                   Explanation
                 </label>
                 <input
@@ -776,7 +776,7 @@ export const ReviewPage: React.FC = () => {
                     setEditingQuestion({ ...editingQuestion, explanation: e.target.value })
                   }
                   placeholder="Optional answer explanation"
-                  className="w-full px-3 py-2 bg-[#0E1117] border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500 transition-colors"
                 />
               </div>
 
@@ -788,7 +788,7 @@ export const ReviewPage: React.FC = () => {
                   onChange={(e) =>
                     setEditingQuestion({ ...editingQuestion, needs_review: e.target.checked })
                   }
-                  className="rounded border-slate-700 text-orange-600 focus:ring-orange-500"
+                  className="rounded border-slate-700 text-orange-600 focus:ring-orange-500 accent-orange-600"
                 />
                 <label htmlFor="needs_review_cb" className="text-xs text-slate-300">
                   Mark as needing further review
@@ -799,7 +799,7 @@ export const ReviewPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setEditingQuestion(null)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer hover:bg-slate-700"
+                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer hover:bg-slate-750"
                 >
                   Cancel
                 </button>
@@ -819,9 +819,9 @@ export const ReviewPage: React.FC = () => {
       {/* Modal: Bulk Set Answer Key */}
       {isAnswerKeyOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 font-heading">
                 <KeyRound className="w-5 h-5 text-orange-400" />
                 Bulk Set Answer Key
               </h3>
@@ -839,13 +839,13 @@ export const ReviewPage: React.FC = () => {
               value={answerKeyInput}
               onChange={(e) => setAnswerKeyInput(e.target.value)}
               placeholder="e.g. 1-B, 2-D, 3-A, 4-C, 5-B..."
-              className="w-full px-3 py-2.5 bg-[#0E1117] border border-slate-800 rounded-lg text-slate-100 text-sm font-mono focus:outline-none focus:border-orange-500"
+              className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-sm font-mono focus:outline-none focus:border-orange-500 transition-colors"
             />
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
               <button
                 onClick={() => setIsAnswerKeyOpen(false)}
-                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer hover:bg-slate-700"
+                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer hover:bg-slate-750"
               >
                 Cancel
               </button>
@@ -864,9 +864,9 @@ export const ReviewPage: React.FC = () => {
       {/* Modal: Add Manual Question */}
       {isAddingQuestion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 overflow-y-auto">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2 font-heading">
                 <Plus className="w-5 h-5 text-orange-400" />
                 Add New Question Manually
               </h3>
@@ -877,7 +877,7 @@ export const ReviewPage: React.FC = () => {
 
             <form onSubmit={handleAddQuestion} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 font-heading">
                   Question Text
                 </label>
                 <textarea
@@ -886,12 +886,12 @@ export const ReviewPage: React.FC = () => {
                   value={newQText}
                   onChange={(e) => setNewQText(e.target.value)}
                   placeholder="Enter the question prompt..."
-                  className="w-full px-3 py-2 bg-[#0E1117] border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 font-heading">
                   Options (Click letter to toggle as correct)
                 </label>
                 <div className="space-y-2">
@@ -923,7 +923,7 @@ export const ReviewPage: React.FC = () => {
                             updated[idx].text = e.target.value;
                             setNewQOptions(updated);
                           }}
-                          className="flex-grow px-3 py-1.5 bg-[#0E1117] border border-slate-800 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-orange-500"
+                          className="flex-grow px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-xs focus:outline-none focus:border-orange-500 transition-colors"
                         />
                       </div>
                     );
@@ -932,7 +932,7 @@ export const ReviewPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 font-heading">
                   Explanation
                 </label>
                 <input
@@ -940,7 +940,7 @@ export const ReviewPage: React.FC = () => {
                   value={newQExplanation}
                   onChange={(e) => setNewQExplanation(e.target.value)}
                   placeholder="Optional explanation for the correct answer"
-                  className="w-full px-3 py-2 bg-[#0E1117] border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-100 text-sm focus:outline-none focus:border-orange-500 transition-colors"
                 />
               </div>
 
@@ -948,7 +948,7 @@ export const ReviewPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddingQuestion(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer hover:bg-slate-700"
+                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium cursor-pointer hover:bg-slate-750"
                 >
                   Cancel
                 </button>
@@ -968,17 +968,17 @@ export const ReviewPage: React.FC = () => {
       {/* Modal: Source Page Image Preview */}
       {previewPage && id && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
-          <div className="bg-[#161B22] border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col p-6 shadow-2xl">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 font-heading">
                 <Eye className="w-5 h-5 text-orange-400" />
                 Original Document Page {previewPage}
               </h3>
-              <button onClick={() => setPreviewPage(null)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setPreviewPage(null)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="flex-grow overflow-auto flex items-center justify-center p-2 bg-[#0E1117] rounded-xl border border-slate-800">
+            <div className="flex-grow overflow-auto flex items-center justify-center p-2 bg-slate-950 rounded-xl border border-slate-800">
               <img
                 src={getPageImageUrl(id, previewPage)}
                 alt={`Source Page ${previewPage}`}

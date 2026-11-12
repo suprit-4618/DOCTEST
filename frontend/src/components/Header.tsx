@@ -20,18 +20,19 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-50">
+    <header className="border-b border-slate-800 bg-slate-900/95 backdrop-blur-md sticky top-0 z-50 transition-colors">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Brand / Logo */}
         <Link to="/" className="flex items-center space-x-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center text-white shadow-sm group-hover:bg-orange-500 transition">
+          <div className="w-8 h-8 rounded-lg bg-orange-600 flex items-center justify-center text-white shadow-sm group-hover:bg-orange-500 transition-colors">
             <BookOpen className="w-4 h-4 text-white" />
           </div>
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex items-baseline gap-2">
             <span className="text-base font-extrabold text-slate-100 tracking-tight font-heading">
               DocTest
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Exam Engine
             </span>
           </div>
@@ -43,8 +44,9 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-850 text-slate-400 hover:text-slate-100 border border-slate-800 hover:border-slate-700 transition cursor-pointer"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-850 text-slate-400 hover:text-slate-100 border border-slate-800 hover:border-slate-750 transition-colors cursor-pointer"
             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+            aria-label="Toggle visual theme"
           >
             {theme === 'dark' ? (
               <Sun className="w-4 h-4 text-orange-400" />
@@ -55,10 +57,10 @@ export const Header: React.FC = () => {
 
           <Link
             to="/library"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               location.pathname === '/library'
-                ? 'bg-slate-800 text-slate-100 border-slate-700'
-                : 'text-slate-400 hover:text-slate-100 border-transparent hover:border-slate-800'
+                ? 'bg-slate-800 text-slate-100 border-slate-700 shadow-sm'
+                : 'text-slate-400 hover:text-slate-100 border-transparent hover:border-slate-800 hover:bg-slate-850/60'
             }`}
           >
             <Library className="w-3.5 h-3.5 text-emerald-500" />
@@ -67,7 +69,7 @@ export const Header: React.FC = () => {
 
           <Link
             to="/upload"
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-orange-600 hover:bg-orange-500 text-white shadow-sm transition"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-orange-600 hover:bg-orange-500 text-white shadow-sm transition-colors"
           >
             <UploadCloud className="w-3.5 h-3.5" />
             <span>Upload Document</span>
